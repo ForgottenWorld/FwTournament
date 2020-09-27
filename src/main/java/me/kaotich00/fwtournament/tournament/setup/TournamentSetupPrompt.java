@@ -1,7 +1,8 @@
 package me.kaotich00.fwtournament.tournament.setup;
 
 import me.kaotich00.fwtournament.Fwtournament;
-import me.kaotich00.fwtournament.command.services.SimpleTournamentService;
+import me.kaotich00.fwtournament.services.SimpleTournamentService;
+import me.kaotich00.fwtournament.kit.gui.KitGUI;
 import me.kaotich00.fwtournament.tournament.Tournament;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
 import org.bukkit.Bukkit;
@@ -19,8 +20,8 @@ public class TournamentSetupPrompt implements ConversationAbandonedListener {
 
     private final int ADD_PARTICIPANT = 1;
     private final int REMOVE_PARTICIPANT = 2;
-    private final int SHOW_PARTICIPANTS = 3;
-    private final int MODIFY_KIT = 4;
+    private final int MODIFY_KIT = 3;
+    private final int EXIT_SETUP = 4;
 
     public TournamentSetupPrompt(Fwtournament plugin, Tournament tournament) {
         this.editedTournament = tournament;
@@ -40,9 +41,9 @@ public class TournamentSetupPrompt implements ConversationAbandonedListener {
     @Override
     public void conversationAbandoned(ConversationAbandonedEvent abandonedEvent) {
         if (abandonedEvent.gracefulExit()) {
-            abandonedEvent.getContext().getForWhom().sendRawMessage(ChatFormatter.formatSuccessMessage("Setup completed!"));
+            abandonedEvent.getContext().getForWhom().sendRawMessage(ChatFormatter.formatSuccessMessage("Done"));
         } else {
-            abandonedEvent.getContext().getForWhom().sendRawMessage(ChatFormatter.formatErrorMessage("Setup canceled!"));
+            abandonedEvent.getContext().getForWhom().sendRawMessage(ChatFormatter.formatErrorMessage("Canceled"));
         }
     }
 
@@ -50,18 +51,19 @@ public class TournamentSetupPrompt implements ConversationAbandonedListener {
 
         @Override
         public String getPromptText(ConversationContext context) {
-            String promptMessage = ChatFormatter.formatSuccessMessage(ChatColor.GRAY + "Welcome to tournament setup");
-            promptMessage = promptMessage.concat( "\n" + "Here is the list of actions you can do:" );
-            promptMessage = promptMessage.concat( "\n" + "(1) Add a participant" );
-            promptMessage = promptMessage.concat( "\n" + "(2) Remove a participant" );
-            promptMessage = promptMessage.concat( "\n" + "(3) Show participant list" );
-            promptMessage = promptMessage.concat( "\n" + "(4) Modify tournament Kit" );
+            String promptMessage = ChatFormatter.formatSuccessMessage("\n" + ChatColor.AQUA + "---------------------------------------------------");
+            promptMessage = promptMessage.concat( "\n" + ChatColor.DARK_AQUA + "Welcome to tournament setup, Here is the list of actions you can do, type one of the following:" );
+            promptMessage = promptMessage.concat( "\n" + ChatColor.AQUA + "---------------------------------------------------" );
+            promptMessage = promptMessage.concat( "\n" + ChatColor.GOLD + "(1) " + ChatColor.GREEN + "Add a participant" );
+            promptMessage = promptMessage.concat( "\n" + ChatColor.GOLD + "(2) " + ChatColor.GREEN + "Remove a participant" );
+            promptMessage = promptMessage.concat( "\n" + ChatColor.GOLD + "(3) " + ChatColor.GREEN + "Modify tournament Kit" );
+            promptMessage = promptMessage.concat( "\n" + ChatColor.GOLD + "(4) " + ChatColor.RED + "Exit setup\n" );
             return promptMessage;
         }
 
         @Override
         protected boolean isInputValid(ConversationContext context, String input) {
-            return Integer.parseInt(input) < 5 && Integer.parseInt(input) > 0;
+            return Integer.parseInt(input) < 4 && Integer.parseInt(input) > 0;
         }
 
         @Override
@@ -71,19 +73,19 @@ public class TournamentSetupPrompt implements ConversationAbandonedListener {
                     return new AddParticipantPrompt();
                 case REMOVE_PARTICIPANT:
                     return new RemoveParticipantPrompt();
-                case SHOW_PARTICIPANTS:
-
-                    break;
                 case MODIFY_KIT:
-
+                    KitGUI gui = new KitGUI((Player) context.getForWhom(), editedTournament);
+                    gui.openGUI();
                     break;
+                case EXIT_SETUP:
+                    return Prompt.END_OF_CONVERSATION;
             }
             return Prompt.END_OF_CONVERSATION;
         }
 
         @Override
         protected String getFailedValidationText(ConversationContext context, String invalidInput) {
-            return "The input must be a number between 1 and 4";
+            return "The input must be a number between 1 and 3";
         }
     }
 
@@ -114,7 +116,7 @@ public class TournamentSetupPrompt implements ConversationAbandonedListener {
             } else {
                 sender.sendMessage(ChatFormatter.formatErrorMessage("The player " + input + " is already a participant"));
             }
-            return Prompt.END_OF_CONVERSATION;
+            return new SetupEnterInit();
         }
 
         @Override
@@ -151,7 +153,7 @@ public class TournamentSetupPrompt implements ConversationAbandonedListener {
             } else {
                 sender.sendMessage(ChatFormatter.formatErrorMessage("The player " + input + " is not a participant"));
             }
-            return Prompt.END_OF_CONVERSATION;
+            return new SetupEnterInit();
         }
 
         @Override

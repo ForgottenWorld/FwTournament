@@ -2,6 +2,7 @@ package me.kaotich00.fwtournament.tournament;
 
 import me.kaotich00.fwtournament.bracket.Bracket;
 import me.kaotich00.fwtournament.kit.Kit;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -18,6 +19,7 @@ public class Tournament {
         this.name = name;
         this.playersList = new HashSet<>();
         this.bracketsList = new HashSet<>();
+        this.tournamentKit = new Kit();
     }
 
     public void addPlayer(UUID uuid) {
@@ -40,6 +42,10 @@ public class Tournament {
 
     public Set<Bracket> getBracketsList() {
         return bracketsList;
+    }
+
+    public Kit getKit() {
+        return this.tournamentKit;
     }
 
 }

@@ -2,7 +2,7 @@ package me.kaotich00.fwtournament.command.tournament;
 
 import me.kaotich00.fwtournament.Fwtournament;
 import me.kaotich00.fwtournament.command.api.AdminCommand;
-import me.kaotich00.fwtournament.command.services.SimpleTournamentService;
+import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.tournament.Tournament;
 import me.kaotich00.fwtournament.tournament.setup.TournamentSetupPrompt;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
@@ -22,6 +22,8 @@ public class SetupCommand extends AdminCommand {
             Tournament tournament = simpleTournamentService.getTournament(tournamentName).get();
             TournamentSetupPrompt creation = new TournamentSetupPrompt(Fwtournament.getPlugin(Fwtournament.class), tournament);
             creation.startConversationForPlayer((Player)sender);
+
+            SimpleTournamentService.getInstance().addModifyingPlayer(((Player) sender).getUniqueId(), tournament);
         } else {
             sender.sendMessage(ChatFormatter.formatErrorMessage("The tournament you specified doesn't exist"));
         }

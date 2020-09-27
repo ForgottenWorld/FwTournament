@@ -1,7 +1,7 @@
 package me.kaotich00.fwtournament.command.tournament;
 
 import me.kaotich00.fwtournament.command.api.AdminCommand;
-import me.kaotich00.fwtournament.command.services.SimpleTournamentService;
+import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;

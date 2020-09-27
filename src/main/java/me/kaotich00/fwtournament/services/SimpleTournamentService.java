@@ -1,4 +1,4 @@
-package me.kaotich00.fwtournament.command.services;
+package me.kaotich00.fwtournament.services;
 
 import me.kaotich00.fwtournament.tournament.Tournament;
 
@@ -10,12 +10,14 @@ public class SimpleTournamentService {
 
     private HashMap<String, Tournament> tournamentList;
     private static SimpleTournamentService simpleTournamentService;
+    private HashMap<UUID, Tournament> currentModifyingPlayer;
 
     private SimpleTournamentService() {
         if(simpleTournamentService != null) {
             throw new RuntimeException("Use getInstance() method to get the single instance of this class.");
         }
         this.tournamentList = new HashMap<>();
+        this.currentModifyingPlayer = new HashMap<>();
     }
 
     public static SimpleTournamentService getInstance() {
@@ -58,6 +60,18 @@ public class SimpleTournamentService {
 
         tournament.removePlayer(uuid);
         return true;
+    }
+
+    public void addModifyingPlayer(UUID player, Tournament tournament) {
+        this.currentModifyingPlayer.put(player, tournament);
+    }
+
+    public void removeModifyingPlayer(UUID player) {
+        this.currentModifyingPlayer.remove(player);
+    }
+
+    public Tournament getTournamentByModifyingPlayer(UUID player) {
+        return this.currentModifyingPlayer.get(player);
     }
 
 }
