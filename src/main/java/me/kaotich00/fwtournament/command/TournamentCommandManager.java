@@ -1,12 +1,15 @@
 package me.kaotich00.fwtournament.command;
 
 import me.kaotich00.fwtournament.Fwtournament;
+import me.kaotich00.fwtournament.command.tournament.GenerateCommand;
 import me.kaotich00.fwtournament.command.tournament.NewCommand;
 import me.kaotich00.fwtournament.command.tournament.SetupCommand;
+import me.kaotich00.fwtournament.command.tournament.StartCommand;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
 import me.kaotich00.fwtournament.utils.CommandTypes;
 import me.kaotich00.fwtournament.utils.NameUtil;
 import me.kaotich00.fwtournament.api.command.Command;
+import org.bukkit.command.CommandException;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 
@@ -29,6 +32,8 @@ public class TournamentCommandManager implements TabExecutor {
     private void setup() {
         this.commandRegistry.put(CommandTypes.TORNEO_NEW_COMMAND, new NewCommand());
         this.commandRegistry.put(CommandTypes.TORNEO_SETUP_COMMAND, new SetupCommand());
+        this.commandRegistry.put(CommandTypes.TORNEO_GENERATE_COMMAND, new GenerateCommand());
+        this.commandRegistry.put(CommandTypes.TORNEO_START_COMMAND, new StartCommand());
     }
 
     private Command getCommand(String name) {
@@ -50,7 +55,10 @@ public class TournamentCommandManager implements TabExecutor {
                 sender.sendMessage(ChatFormatter.formatErrorMessage(erCommand.getUsage()));
                 return true;
             }
-            erCommand.onCommand(sender, args);
+            try {
+                erCommand.onCommand(sender, args);
+            } catch (CommandException e) {
+            }
         }
 
         return true;

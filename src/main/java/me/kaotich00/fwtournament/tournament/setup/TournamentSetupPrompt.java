@@ -63,7 +63,7 @@ public class TournamentSetupPrompt implements ConversationAbandonedListener {
 
         @Override
         protected boolean isInputValid(ConversationContext context, String input) {
-            return Integer.parseInt(input) < 4 && Integer.parseInt(input) > 0;
+            return Integer.parseInt(input) < 5 && Integer.parseInt(input) > 0;
         }
 
         @Override
@@ -85,7 +85,7 @@ public class TournamentSetupPrompt implements ConversationAbandonedListener {
 
         @Override
         protected String getFailedValidationText(ConversationContext context, String invalidInput) {
-            return "The input must be a number between 1 and 3";
+            return "The input must be a number between 1 and 4";
         }
     }
 
@@ -107,11 +107,8 @@ public class TournamentSetupPrompt implements ConversationAbandonedListener {
         protected Prompt acceptValidatedInput(ConversationContext context, String input) {
             Player sender = (Player) context.getForWhom();
 
-            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(input);
-            UUID playerUUID = offlinePlayer.getUniqueId();
-
             SimpleTournamentService simpleTournamentService = SimpleTournamentService.getInstance();
-            if(simpleTournamentService.addPlayerToTournament(editedTournament.getName(), playerUUID)) {
+            if(simpleTournamentService.addPlayerToTournament(editedTournament.getName(), input)) {
                 sender.sendMessage(ChatFormatter.formatSuccessMessage("Successfully added " + input + " to participants"));
             } else {
                 sender.sendMessage(ChatFormatter.formatErrorMessage("The player " + input + " is already a participant"));
@@ -144,11 +141,8 @@ public class TournamentSetupPrompt implements ConversationAbandonedListener {
         protected Prompt acceptValidatedInput(ConversationContext context, String input) {
             Player sender = (Player) context.getForWhom();
 
-            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(input);
-            UUID playerUUID = offlinePlayer.getUniqueId();
-
             SimpleTournamentService simpleTournamentService = SimpleTournamentService.getInstance();
-            if(simpleTournamentService.removePlayerFromTournament(editedTournament.getName(), playerUUID)) {
+            if(simpleTournamentService.removePlayerFromTournament(editedTournament.getName(), input)) {
                 sender.sendMessage(ChatFormatter.formatSuccessMessage("Successfully removed " + input + " from participants"));
             } else {
                 sender.sendMessage(ChatFormatter.formatErrorMessage("The player " + input + " is not a participant"));

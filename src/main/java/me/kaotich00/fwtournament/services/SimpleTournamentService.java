@@ -42,23 +42,23 @@ public class SimpleTournamentService {
         return tournamentList.containsKey(name) ? Optional.of(tournamentList.get(name)) : Optional.empty();
     }
 
-    public boolean addPlayerToTournament(String tournamentName, UUID uuid) {
+    public boolean addPlayerToTournament(String tournamentName, String playerName) {
         Tournament tournament = tournamentList.get(tournamentName);
-        if(tournament.getPlayersList().contains(uuid)) {
+        if(tournament.getPlayersList().containsKey(playerName)) {
             return false;
         }
 
-        tournament.addPlayer(uuid);
+        tournament.addPlayer(playerName, null);
         return true;
     }
 
-    public boolean removePlayerFromTournament(String tournamentName, UUID uuid) {
+    public boolean removePlayerFromTournament(String tournamentName, String playerName) {
         Tournament tournament = tournamentList.get(tournamentName);
-        if(!tournament.getPlayersList().contains(uuid)) {
+        if(!tournament.getPlayersList().containsKey(playerName)) {
             return false;
         }
 
-        tournament.removePlayer(uuid);
+        tournament.removePlayer(playerName);
         return true;
     }
 
