@@ -4,11 +4,11 @@ import me.kaotich00.fwtournament.arena.Arena;
 import me.kaotich00.fwtournament.tournament.Tournament;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
 import org.bukkit.Location;
+import org.bukkit.Particle;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class SimpleArenaService {
 
@@ -64,22 +64,22 @@ public class SimpleArenaService {
         switch(senderStep) {
             case SET_PLAYER_ONE_SPAWN:
                 playerArenaCoordinates.put(sender.getUniqueId(), new HashMap<>());
-                playerArenaCoordinates.get(sender.getUniqueId()).put(SET_PLAYER_ONE_SPAWN, location);
+                playerArenaCoordinates.get(sender.getUniqueId()).put(SET_PLAYER_ONE_SPAWN, location.add(0,1,0));
                 sender.sendMessage(ChatFormatter.formatSuccessMessage("Position selected as First player spawn. Pos X:" + location.getBlockX() + ", Pos Y: " + location.getBlockY()));
                 sender.sendMessage(ChatFormatter.formatSuccessMessage("Select SECOND PLAYER SPAWN by right clicking on the block"));
                 break;
             case SET_PLAYER_TWO_SPAWN:
-                playerArenaCoordinates.get(sender.getUniqueId()).put(SET_PLAYER_TWO_SPAWN, location);
+                playerArenaCoordinates.get(sender.getUniqueId()).put(SET_PLAYER_TWO_SPAWN, location.add(0,1,0));
                 sender.sendMessage(ChatFormatter.formatSuccessMessage("Position selected as Second player spawn. Pos X:" + location.getBlockX() + ", Pos Y: " + location.getBlockY()));
                 sender.sendMessage(ChatFormatter.formatSuccessMessage("Select FIRST PLAYER BATTLE LOCATION by right clicking on the block"));
                 break;
             case SET_PLAYER_ONE_BATTLE:
-                playerArenaCoordinates.get(sender.getUniqueId()).put(SET_PLAYER_ONE_BATTLE, location);
+                playerArenaCoordinates.get(sender.getUniqueId()).put(SET_PLAYER_ONE_BATTLE, location.add(0,1,0));
                 sender.sendMessage(ChatFormatter.formatSuccessMessage("Position selected as First player battle. Pos X:" + location.getBlockX() + ", Pos Y: " + location.getBlockY()));
                 sender.sendMessage(ChatFormatter.formatSuccessMessage("Select SECOND PLAYER BATTLE LOCATION by right clicking on the block"));
                 break;
             case SET_PLAYER_TWO_BATTLE:
-                playerArenaCoordinates.get(sender.getUniqueId()).put(SET_PLAYER_TWO_BATTLE, location);
+                playerArenaCoordinates.get(sender.getUniqueId()).put(SET_PLAYER_TWO_BATTLE, location.add(0,1,0));
                 sender.sendMessage(ChatFormatter.formatSuccessMessage("Position selected as Second player battle. Pos X:" + location.getBlockX() + ", Pos Y: " + location.getBlockY()));
                 sender.sendMessage(ChatFormatter.formatSuccessMessage("Arena creation completed!"));
 
@@ -107,5 +107,6 @@ public class SimpleArenaService {
     public boolean isPlayerInCreationMode(Player player) {
         return this.playerArenaCreation.containsKey(player.getUniqueId());
     }
+
 
 }
