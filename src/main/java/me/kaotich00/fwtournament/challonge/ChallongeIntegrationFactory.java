@@ -87,7 +87,7 @@ public class ChallongeIntegrationFactory {
         postDataParams.put("api_key", HTTPUtils.API_KEY);
 
         String URI = HTTPUtils.CHALLONGE_START_TOURNAMENT_ENDPOINT.replace("{tournament}",challongeTournament.getId().toString());
-        String requestMethod = "GET";
+        String requestMethod = "POST";
 
         String response = HTTPClient.fetchHttpRequest(URI, requestMethod, postDataParams, sender);
         JSONParser parser = new JSONParser();
@@ -104,7 +104,7 @@ public class ChallongeIntegrationFactory {
 
         Multimap<String,String> postDataParams = ArrayListMultimap.create();
         postDataParams.put("api_key", HTTPUtils.API_KEY);
-        postDataParams.put("state", "open");
+        //postDataParams.put("state", "open");
 
         String URI = HTTPUtils.CHALLONGE_GET_TOURNAMENT_MATCHES_ENDPOINT.replace("{tournament}",challongeTournament.getId().toString());
         String requestMethod = "GET";
@@ -114,6 +114,10 @@ public class ChallongeIntegrationFactory {
         JSONArray responseData = null;
         try {
             responseData = (JSONArray) parser.parse(response);
+            for(int i = 0; i < responseData.size(); i++) {
+                JSONObject match = (JSONObject) responseData.get(i);
+
+            }
         } catch(Exception e) {
             e.printStackTrace();
         }

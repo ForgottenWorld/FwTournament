@@ -17,6 +17,9 @@ public class HTTPClient {
 
         String response = "";
         try {
+            if(requestMethod.equals("GET")) {
+                URI = URI += "?" + formatPostDataParams( postDataParams );
+            }
             URL url = new URL(URI);
 
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -29,15 +32,15 @@ public class HTTPClient {
             if(requestMethod.equals("POST")) {
                 conn.setRequestProperty("Content-Type", "multipart/form-data");
                 conn.setRequestProperty("Connection", "keep-alive");
+
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+                writer.write(formatPostDataParams(postDataParams));
+
+                writer.flush();
+                writer.close();
+                os.close();
             }
-
-            OutputStream os = conn.getOutputStream();
-            BufferedWriter writer = new BufferedWriter( new OutputStreamWriter( os, "UTF-8" ) );
-            writer.write( formatPostDataParams( postDataParams ) );
-
-            writer.flush();
-            writer.close();
-            os.close();
 
             int responseCode = conn.getResponseCode();
 

@@ -1,25 +1,51 @@
 package me.kaotich00.fwtournament.bracket;
 
-import java.util.Set;
 import java.util.UUID;
 
 public class Bracket {
 
-    private Set<UUID> challengers;
+    private String firstPlayerName;
 
-    private Integer stepIdentifier;
+    private UUID firstPlayerUUID;
 
-    public Bracket(Set<UUID> challengers, Integer stepIdentifier) {
-        this.challengers = challengers;
-        this.stepIdentifier = stepIdentifier;
+    private String secondPlayerName;
+    private UUID secondPlayerUUID;
+
+    public Bracket(String firstPlayerName, String secondPlayerName) {
+        this.firstPlayerName = firstPlayerName;
+        this.secondPlayerName = secondPlayerName;
     }
 
-    public Set<UUID> getChallengers() {
-        return challengers;
+    public String getFirstPlayerName() {
+        return firstPlayerName;
     }
 
-    public Integer getStepIdentifier() {
-        return stepIdentifier;
+    public void setFirstPlayerName(String firstPlayerName) {
+        this.firstPlayerName = firstPlayerName;
+    }
+
+    public UUID getFirstPlayerUUID() {
+        return firstPlayerUUID;
+    }
+
+    public void setFirstPlayerUUID(UUID firstPlayerUUID) {
+        this.firstPlayerUUID = firstPlayerUUID;
+    }
+
+    public String getSecondPlayerName() {
+        return secondPlayerName;
+    }
+
+    public void setSecondPlayerName(String secondPlayerName) {
+        this.secondPlayerName = secondPlayerName;
+    }
+
+    public UUID getSecondPlayerUUID() {
+        return secondPlayerUUID;
+    }
+
+    public void setSecondPlayerUUID(UUID secondPlayerUUID) {
+        this.secondPlayerUUID = secondPlayerUUID;
     }
 
 }

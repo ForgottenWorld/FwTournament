@@ -14,6 +14,8 @@ public class Arena {
     private Location playerOneBattle;
     private Location playerTwoBattle;
 
+    private boolean isOccupied = false;
+
     public Arena(String arenaName, Location playerOneSpawn, Location playerTwoSpawn, Location playerOneBattle, Location playerTwoBattle) {
         this.arenaName = arenaName;
         this.playerOneSpawn = playerOneSpawn;
@@ -57,6 +59,10 @@ public class Arena {
     public String getArenaName() { return this.arenaName; }
 
     public void setArenaName(String arenaName) { this.arenaName = arenaName; }
+
+    public void setOccupied(boolean occupied) { this.isOccupied = occupied; }
+
+    public boolean isOccupied(){ return this.isOccupied; }
 
     @Override
     public boolean equals(Object o) {

@@ -2,12 +2,10 @@ package me.kaotich00.fwtournament.storage.sqlite;
 
 import me.kaotich00.fwtournament.Fwtournament;
 import me.kaotich00.fwtournament.challonge.objects.ChallongeTournament;
-import me.kaotich00.fwtournament.kit.Kit;
 import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.tournament.Tournament;
 import me.kaotich00.fwtournament.utils.SerializationUtil;
 import org.bukkit.inventory.ItemStack;
-import sun.java2d.pipe.SpanShapeRenderer;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -57,6 +55,7 @@ public class SQLiteConnectionService {
 
         tablesSql[0] = "CREATE TABLE IF NOT EXISTS fw_challonge_tournament ("+
                 "id  INTEGER NOT NULL," +
+                "description  varchar(500), " +
                 "name  varchar(100) NOT NULL," +
                 "challonge_link  varchar(250) NOT NULL," +
                 "PRIMARY KEY (id)" +
@@ -64,7 +63,6 @@ public class SQLiteConnectionService {
 
         tablesSql[1] = "CREATE TABLE IF NOT EXISTS fw_tournament ("+
                 "name  varchar(50) NOT NULL," +
-                "description  varchar(500), " +
                 "id_challonge INTEGER," +
                 "PRIMARY KEY (name ASC)," +
                 "CONSTRAINT fk_fw_tournament_x_fw_challonge_tournament FOREIGN KEY (id_challonge) REFERENCES fw_challonge_tournament (id)" +
