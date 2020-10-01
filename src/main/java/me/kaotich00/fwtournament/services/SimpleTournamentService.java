@@ -74,4 +74,8 @@ public class SimpleTournamentService {
         return this.currentModifyingPlayer.get(player);
     }
 
+    public HashMap<String, Tournament> getTournamentList() {
+        return this.tournamentList;
+    }
+
 }
