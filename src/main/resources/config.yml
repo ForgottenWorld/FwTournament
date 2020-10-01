@@ -22,4 +22,24 @@
 # |                                                                                              | #
 # +----------------------------------------------------------------------------------------------+ #
 
+# Define the default launguage for the plugin. Available languages: english, italian
 language: 'english'
+
+# +----------------------------------------------------------------------------------------------+ #
+# |                                                                                              | #
+# |                                  CHALLONGE SETTINGS                                          | #
+# |                                                                                              | #
+# |                             Configure challonge API settings                                 | #
+# |                                                                                              | #
+# +----------------------------------------------------------------------------------------------+ #
+
+# Specify your API configuration KEY
+# If you are not sure where to find it, follow this guide:
+# https://api.challonge.com/it/api.html
+challonge_api_key: 'insert here your api key'
+
+# This is the prefix that is added
+# before the tournament name. Default: 'tournament'
+# Tournament name: pvp_1_v_1
+# Challonge tournament name: tournament_pvp_1_v_1
+challonge_tournament_prefix: 'tournament'

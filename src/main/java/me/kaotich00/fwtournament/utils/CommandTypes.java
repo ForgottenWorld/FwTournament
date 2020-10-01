@@ -10,4 +10,6 @@ public class CommandTypes {
     public static final String TORNEO_GENERATE_COMMAND = "generate";
     public static final String TORNEO_START_COMMAND = "start";
 
+    public static final String ARENA_NEW_COMMAND = "new";
+
 }

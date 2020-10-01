@@ -6,13 +6,16 @@ import java.util.Objects;
 
 public class Arena {
 
+    private String arenaName;
+
     private Location playerOneSpawn;
     private Location playerTwoSpawn;
 
     private Location playerOneBattle;
     private Location playerTwoBattle;
 
-    public Arena(Location playerOneSpawn, Location playerTwoSpawn, Location playerOneBattle, Location playerTwoBattle) {
+    public Arena(String arenaName, Location playerOneSpawn, Location playerTwoSpawn, Location playerOneBattle, Location playerTwoBattle) {
+        this.arenaName = arenaName;
         this.playerOneSpawn = playerOneSpawn;
         this.playerTwoSpawn = playerTwoSpawn;
         this.playerOneBattle = playerOneBattle;
@@ -50,6 +53,10 @@ public class Arena {
     public void setPlayerTwoBattle(Location playerTwoBattle) {
         this.playerTwoBattle = playerTwoBattle;
     }
+
+    public String getArenaName() { return this.arenaName; }
+
+    public void setArenaName(String arenaName) { this.arenaName = arenaName; }
 
     @Override
     public boolean equals(Object o) {

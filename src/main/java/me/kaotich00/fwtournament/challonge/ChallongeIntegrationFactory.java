@@ -118,6 +118,9 @@ public class ChallongeIntegrationFactory {
             e.printStackTrace();
         }
 
+    }
+
+    public static void postMatchResult(Player sender, Tournament tournament) {
 
     }
 

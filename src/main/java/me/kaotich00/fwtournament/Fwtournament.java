@@ -1,6 +1,8 @@
 package me.kaotich00.fwtournament;
 
+import me.kaotich00.fwtournament.command.ArenaCommandManager;
 import me.kaotich00.fwtournament.command.TournamentCommandManager;
+import me.kaotich00.fwtournament.listener.arena.ArenaCreationListener;
 import me.kaotich00.fwtournament.listener.kit.KitGuiListener;
 import me.kaotich00.fwtournament.storage.sqlite.SQLiteConnectionService;
 import org.bukkit.Bukkit;
@@ -60,10 +62,12 @@ public final class Fwtournament extends JavaPlugin {
 
     public void registerCommands() {
         getCommand("torneo").setExecutor(new TournamentCommandManager(this));
+        getCommand("arena").setExecutor(new ArenaCommandManager(this));
     }
 
     public void registerListeners() {
         getServer().getPluginManager().registerEvents(new KitGuiListener(), this);
+        getServer().getPluginManager().registerEvents(new ArenaCreationListener(), this);
     }
 
     public void reloadDefaultConfig() {

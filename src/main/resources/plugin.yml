@@ -9,3 +9,7 @@ commands:
     description: Command for creating tournaments
     usage: /<command>
     aliases: [torneo, tournament]
+  arena:
+    description: Command for creating arenas
+    usage: /<command>
+    aliases: [arena]

@@ -1,5 +1,6 @@
 package me.kaotich00.fwtournament.command.tournament;
 
+import me.kaotich00.fwtournament.Fwtournament;
 import me.kaotich00.fwtournament.challonge.ChallongeIntegrationFactory;
 import me.kaotich00.fwtournament.challonge.objects.ChallongeTournament;
 import me.kaotich00.fwtournament.command.api.AdminCommand;
@@ -26,7 +27,13 @@ public class GenerateCommand extends AdminCommand {
                     sender.sendMessage(ChatFormatter.formatErrorMessage("The tournament has already been generated, skipping."));
                     ChallongeIntegrationFactory.getTournamentBrackets((Player) sender, tournament);
                 } else {
-                    ChallongeTournament challongeTournament = ChallongeIntegrationFactory.createTournament((Player) sender, tournament.getName(), "test descrizione", "single elimination", "false", "fw_tournament_" + tournament.getName());
+                    String challongeTournamentName = tournament.getName();
+                    String challongeTournamentDescription = "test descrizione";
+                    String challongeTournamentType = "single elimination";
+                    String challongeOpenSignup = "false";
+                    String challongeTournamentLink = Fwtournament.getDefaultConfig().getString("challonge_tournament_prefix") + "_" + tournament.getName();
+
+                    ChallongeTournament challongeTournament = ChallongeIntegrationFactory.createTournament((Player) sender, challongeTournamentName, challongeTournamentDescription, challongeTournamentType, challongeOpenSignup, challongeTournamentLink);
                     sender.sendMessage(ChatFormatter.formatSuccessMessage("Generating Challonge tournament..."));
 
                     if (challongeTournament == null) {
