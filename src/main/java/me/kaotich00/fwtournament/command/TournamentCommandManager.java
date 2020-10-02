@@ -5,6 +5,8 @@ import me.kaotich00.fwtournament.command.tournament.GenerateCommand;
 import me.kaotich00.fwtournament.command.tournament.NewCommand;
 import me.kaotich00.fwtournament.command.tournament.SetupCommand;
 import me.kaotich00.fwtournament.command.tournament.StartCommand;
+import me.kaotich00.fwtournament.services.SimpleArenaService;
+import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
 import me.kaotich00.fwtournament.utils.CommandTypes;
 import me.kaotich00.fwtournament.utils.NameUtil;
@@ -72,20 +74,19 @@ public class TournamentCommandManager implements TabExecutor {
         /* Suggest child commands */
         if(args.length == 1) {
             argsIndex = args[0];
-            /* Admin commands */
-            //suggestions.add("reload");
+
+            for(String commandName: this.commandRegistry.keySet()) {
+                suggestions.add(commandName);
+            }
         }
 
-        /*if(args.length == 2) {
+        if(args.length == 2) {
             argsIndex = args[1];
-            switch(args[1]) {
-                case CommandTypes.CHECK_COMMAND:
-                    for(Player player: Bukkit.getOnlinePlayers()) {
-                        suggestions.add(player.getPlayerListName());
-                    }
-                    break;
+
+            for(String tournamentName: SimpleTournamentService.getInstance().getTournamentList().keySet()) {
+                suggestions.add(tournamentName);
             }
-        }*/
+        }
 
         return NameUtil.filterByStart(suggestions, argsIndex);
     }

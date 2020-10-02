@@ -15,6 +15,9 @@ public class Tournament {
     private Kit tournamentKit;
     private ChallongeTournament challongeTournament;
 
+    private boolean isGenerated = false;
+    private boolean isStarted = false;
+
     public Tournament(String name) {
         this.name = name;
         this.playersList = new HashMap<>();
@@ -54,6 +57,22 @@ public class Tournament {
 
     public ChallongeTournament getChallongeTournament() {
         return this.challongeTournament;
+    }
+
+    public boolean isGenerated() {
+        return isGenerated;
+    }
+
+    public void setGenerated(boolean generated) {
+        isGenerated = generated;
+    }
+
+    public boolean isStarted() {
+        return isStarted;
+    }
+
+    public void setStarted(boolean started) {
+        isStarted = started;
     }
 
 }

@@ -15,6 +15,7 @@ import org.json.simple.parser.ParseException;
 
 import java.math.BigInteger;
 import java.util.Optional;
+import java.util.UUID;
 
 public class ChallongeIntegrationFactory {
 
@@ -104,7 +105,7 @@ public class ChallongeIntegrationFactory {
 
         Multimap<String,String> postDataParams = ArrayListMultimap.create();
         postDataParams.put("api_key", HTTPUtils.API_KEY);
-        //postDataParams.put("state", "open");
+        postDataParams.put("state", "open");
 
         String URI = HTTPUtils.CHALLONGE_GET_TOURNAMENT_MATCHES_ENDPOINT.replace("{tournament}",challongeTournament.getId().toString());
         String requestMethod = "GET";
@@ -116,7 +117,18 @@ public class ChallongeIntegrationFactory {
             responseData = (JSONArray) parser.parse(response);
             for(int i = 0; i < responseData.size(); i++) {
                 JSONObject match = (JSONObject) responseData.get(i);
+                match = (JSONObject) match.get("match");
 
+                String playerOneId = match.get("player1_id").toString();
+                String playerTwoId = match.get("player2_id").toString();
+
+                String playerOneName = getParticipantName(sender, tournament, playerOneId);
+                String playerTwoName = getParticipantName(sender, tournament, playerTwoId);
+
+                UUID playerOneUUID = tournament.getPlayersList().get(playerOneName);
+                UUID playerTwoUUID = tournament.getPlayersList().get(playerTwoName);
+
+                SimpleTournamentService.getInstance().pushNewBracket(tournament, playerOneName, playerOneUUID, playerTwoName, playerTwoUUID);
             }
         } catch(Exception e) {
             e.printStackTrace();
@@ -124,8 +136,27 @@ public class ChallongeIntegrationFactory {
 
     }
 
-    public static void postMatchResult(Player sender, Tournament tournament) {
+    public static String getParticipantName(Player sender, Tournament tournament, String playerId) throws ParseException {
+        ChallongeTournament challongeTournament = tournament.getChallongeTournament();
 
+        Multimap<String,String> postDataParams = ArrayListMultimap.create();
+        postDataParams.put("api_key", HTTPUtils.API_KEY);
+
+        String URI = HTTPUtils.CHALLONGE_GET_MATCH_PARTICIPANTS.replace("{tournament}",challongeTournament.getId().toString()).replace("{player}", playerId);
+        String requestMethod = "GET";
+
+        String response = HTTPClient.fetchHttpRequest(URI, requestMethod, postDataParams, sender);
+        JSONParser parser = new JSONParser();
+        JSONObject responseData = null;
+        try {
+            responseData = (JSONObject) parser.parse(response);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
+        JSONObject playerData = (JSONObject) responseData.get("participant");
+        String playerName = playerData.get("name").toString();
+        return playerName;
     }
 
 }

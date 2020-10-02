@@ -5,15 +5,18 @@ import java.util.UUID;
 public class Bracket {
 
     private String firstPlayerName;
-
     private UUID firstPlayerUUID;
 
     private String secondPlayerName;
     private UUID secondPlayerUUID;
 
-    public Bracket(String firstPlayerName, String secondPlayerName) {
+    private UUID winner = null;
+
+    public Bracket(String firstPlayerName, UUID firstPlayerUUID, String secondPlayerName, UUID secondPlayerUUID) {
         this.firstPlayerName = firstPlayerName;
+        this.firstPlayerUUID = firstPlayerUUID;
         this.secondPlayerName = secondPlayerName;
+        this.secondPlayerUUID = secondPlayerUUID;
     }
 
     public String getFirstPlayerName() {
@@ -46,6 +49,14 @@ public class Bracket {
 
     public void setSecondPlayerUUID(UUID secondPlayerUUID) {
         this.secondPlayerUUID = secondPlayerUUID;
+    }
+
+    public UUID getWinner() {
+        return winner;
+    }
+
+    public void setWinner(UUID winner) {
+        this.winner = winner;
     }
 
 }

@@ -1,5 +1,6 @@
 package me.kaotich00.fwtournament.services;
 
+import me.kaotich00.fwtournament.bracket.Bracket;
 import me.kaotich00.fwtournament.tournament.Tournament;
 
 import java.util.HashMap;
@@ -42,13 +43,13 @@ public class SimpleTournamentService {
         return tournamentList.containsKey(name) ? Optional.of(tournamentList.get(name)) : Optional.empty();
     }
 
-    public boolean addPlayerToTournament(String tournamentName, String playerName) {
+    public boolean addPlayerToTournament(String tournamentName, UUID playerUUID, String playerName) {
         Tournament tournament = tournamentList.get(tournamentName);
         if(tournament.getPlayersList().containsKey(playerName)) {
             return false;
         }
 
-        tournament.addPlayer(playerName, null);
+        tournament.addPlayer(playerName, playerUUID);
         return true;
     }
 
@@ -76,6 +77,12 @@ public class SimpleTournamentService {
 
     public HashMap<String, Tournament> getTournamentList() {
         return this.tournamentList;
+    }
+
+    public Bracket pushNewBracket(Tournament tournament, String playerOne, UUID playerOneUUID, String playerTwo, UUID playerTwoUUID) {
+        Bracket bracket = new Bracket(playerOne, playerOneUUID, playerTwo, playerTwoUUID);
+        tournament.pushBracket(bracket);
+        return bracket;
     }
 
 }

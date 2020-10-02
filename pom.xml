@@ -42,7 +42,7 @@
                         <configuration>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
-                            <outputDirectory>Z:\Users\Simone R\Desktop\Spigot\plugins</outputDirectory>
+                            <outputDirectory>C:\Users\Simone\Desktop\Server paper\plugins</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -65,6 +65,10 @@
             <id>sonatype</id>
             <url>https://oss.sonatype.org/content/groups/public/</url>
         </repository>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -73,6 +77,11 @@
             <artifactId>paper-api</artifactId>
             <version>1.16.3-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.ForgottenWorld</groupId>
+            <artifactId>JamesMojangAPI</artifactId>
+            <version>39d5862d5c448c2da0fd675bee3c6c7697a07d1b</version>
         </dependency>
     </dependencies>
 </project>

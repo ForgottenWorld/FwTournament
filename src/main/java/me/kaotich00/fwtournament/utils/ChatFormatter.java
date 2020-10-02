@@ -1,6 +1,6 @@
 package me.kaotich00.fwtournament.utils;
 
-import org.bukkit.ChatColor;
+import net.md_5.bungee.api.ChatColor;
 
 import java.util.Collections;
 import java.util.Formatter;
@@ -49,6 +49,10 @@ public class ChatFormatter {
                 "\n" + ChatColor.GRAY + ">> " + ChatColor.DARK_AQUA + "/fwt " + ChatColor.AQUA + "reload "
         );
         return message;
+    }
+
+    public static String parseColorMessage(String message, String hexColor) {
+        return ChatColor.of(hexColor) + message;
     }
 
 }

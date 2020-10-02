@@ -21,14 +21,23 @@ public class StartCommand extends AdminCommand {
         SimpleTournamentService simpleTournamentService = SimpleTournamentService.getInstance();
         if(simpleTournamentService.getTournament(tournamentName).isPresent()) {
             Tournament tournament = simpleTournamentService.getTournament(tournamentName).get();
+
+            if(tournament.isStarted()) {
+                sender.sendMessage(ChatFormatter.formatErrorMessage("Tournament already started!"));
+                return;
+            }
+
             if(tournament.getChallongeTournament() != null) {
                 try {
                     sender.sendMessage(ChatFormatter.formatSuccessMessage("Starting tournament..."));
                     ChallongeIntegrationFactory.startTournament((Player) sender, tournament);
                     sender.sendMessage(ChatFormatter.formatSuccessMessage("Tournament started!"));
 
+                    tournament.setStarted(true);
+
                     sender.sendMessage(ChatFormatter.formatSuccessMessage("Collecting current brackets..."));
                     ChallongeIntegrationFactory.getTournamentBrackets((Player) sender, tournament);
+                    sender.sendMessage(ChatFormatter.formatSuccessMessage("Brackets collected!"));
                 } catch (ParseException e) {
                     sender.sendMessage(ChatFormatter.formatErrorMessage("Error while starting tournament! Is it already started?"));
                 }

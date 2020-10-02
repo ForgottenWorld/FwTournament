@@ -22,6 +22,12 @@ public class GenerateCommand extends AdminCommand {
         SimpleTournamentService simpleTournamentService = SimpleTournamentService.getInstance();
         if(simpleTournamentService.getTournament(tournamentName).isPresent()) {
             Tournament tournament = simpleTournamentService.getTournament(tournamentName).get();
+
+            if(tournament.isGenerated()) {
+                sender.sendMessage(ChatFormatter.formatErrorMessage("Tournament already generated!"));
+                return;
+            }
+
             try {
                 if(tournament.getChallongeTournament() != null) {
                     sender.sendMessage(ChatFormatter.formatErrorMessage("The tournament has already been generated, skipping."));
@@ -45,6 +51,8 @@ public class GenerateCommand extends AdminCommand {
                         ChallongeIntegrationFactory.addParticipantsToTournament((Player) sender, tournament);
                         sender.sendMessage(ChatFormatter.formatSuccessMessage("Successfully added participants to the tournament"));
                     }
+
+                    tournament.setGenerated(true);
                 }
             } catch (ParseException e) {
                 e.printStackTrace();

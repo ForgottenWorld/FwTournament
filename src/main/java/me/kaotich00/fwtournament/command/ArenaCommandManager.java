@@ -3,6 +3,8 @@ package me.kaotich00.fwtournament.command;
 import me.kaotich00.fwtournament.Fwtournament;
 import me.kaotich00.fwtournament.api.command.Command;
 import me.kaotich00.fwtournament.command.arena.NewCommand;
+import me.kaotich00.fwtournament.services.SimpleArenaService;
+import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
 import me.kaotich00.fwtournament.utils.CommandTypes;
 import me.kaotich00.fwtournament.utils.NameUtil;
@@ -66,8 +68,18 @@ public class ArenaCommandManager implements TabExecutor {
         /* Suggest child commands */
         if(args.length == 1) {
             argsIndex = args[0];
-            /* Admin commands */
-            //suggestions.add("reload");
+
+            for(String commandName: this.commandRegistry.keySet()) {
+                suggestions.add(commandName);
+            }
+        }
+
+        if(args.length == 2) {
+            argsIndex = args[1];
+
+            for(String arenaName: SimpleArenaService.getInstance().getArenas().keySet()) {
+                suggestions.add(arenaName);
+            }
         }
 
         return NameUtil.filterByStart(suggestions, argsIndex);

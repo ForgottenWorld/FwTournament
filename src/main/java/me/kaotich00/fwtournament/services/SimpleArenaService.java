@@ -1,11 +1,8 @@
 package me.kaotich00.fwtournament.services;
 
 import me.kaotich00.fwtournament.arena.Arena;
-import me.kaotich00.fwtournament.tournament.Tournament;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
 import org.bukkit.Location;
-import org.bukkit.Particle;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import java.util.*;
@@ -108,5 +105,8 @@ public class SimpleArenaService {
         return this.playerArenaCreation.containsKey(player.getUniqueId());
     }
 
+    public HashMap<String,Arena> getArenas() {
+        return this.arenas;
+    }
 
 }

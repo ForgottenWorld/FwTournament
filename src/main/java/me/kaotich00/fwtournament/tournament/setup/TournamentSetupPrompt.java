@@ -1,10 +1,12 @@
 package me.kaotich00.fwtournament.tournament.setup;
 
+import com.james090500.APIManager.UserInfo;
 import me.kaotich00.fwtournament.Fwtournament;
 import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.kit.gui.KitGUI;
 import me.kaotich00.fwtournament.tournament.Tournament;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
+import me.kaotich00.fwtournament.utils.ColorUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -51,13 +53,13 @@ public class TournamentSetupPrompt implements ConversationAbandonedListener {
 
         @Override
         public String getPromptText(ConversationContext context) {
-            String promptMessage = ChatFormatter.formatSuccessMessage("\n" + ChatColor.AQUA + "---------------------------------------------------");
-            promptMessage = promptMessage.concat( "\n" + ChatColor.DARK_AQUA + "Welcome to tournament setup, Here is the list of actions you can do, type one of the following:" );
-            promptMessage = promptMessage.concat( "\n" + ChatColor.AQUA + "---------------------------------------------------" );
-            promptMessage = promptMessage.concat( "\n" + ChatColor.GOLD + "(1) " + ChatColor.GREEN + "Add a participant" );
-            promptMessage = promptMessage.concat( "\n" + ChatColor.GOLD + "(2) " + ChatColor.GREEN + "Remove a participant" );
-            promptMessage = promptMessage.concat( "\n" + ChatColor.GOLD + "(3) " + ChatColor.GREEN + "Modify tournament Kit" );
-            promptMessage = promptMessage.concat( "\n" + ChatColor.GOLD + "(4) " + ChatColor.RED + "Exit setup\n" );
+            String promptMessage = ChatFormatter.parseColorMessage("\n" + "---------------------------------------------------", ColorUtil.colorPrimary);
+            promptMessage = promptMessage.concat( "\n" + ChatFormatter.parseColorMessage("Welcome to tournament setup, Here is the list of actions you can do, type one of the following:", ColorUtil.colorPrimary));
+            promptMessage = promptMessage.concat( "\n" + ChatFormatter.parseColorMessage("---------------------------------------------------", ColorUtil.colorPrimary));
+            promptMessage = promptMessage.concat( "\n" + ChatFormatter.parseColorMessage("(1) ", ColorUtil.colorSecondary) + ChatFormatter.parseColorMessage("Add a participant", ColorUtil.colorSub1));
+            promptMessage = promptMessage.concat( "\n" + ChatFormatter.parseColorMessage("(2) ", ColorUtil.colorSecondary) + ChatFormatter.parseColorMessage("Remove a participant", ColorUtil.colorSub1));
+            promptMessage = promptMessage.concat( "\n" + ChatFormatter.parseColorMessage("(3) ", ColorUtil.colorSecondary) + ChatFormatter.parseColorMessage("Modify tournament kit", ColorUtil.colorSub1));
+            promptMessage = promptMessage.concat( "\n" + ChatFormatter.parseColorMessage("(4) ", ColorUtil.colorSecondary) + ChatFormatter.parseColorMessage("Exit setup", ColorUtil.colorSub2));
             return promptMessage;
         }
 
@@ -99,16 +101,27 @@ public class TournamentSetupPrompt implements ConversationAbandonedListener {
 
         @Override
         protected boolean isInputValid(ConversationContext context, String input) {
-            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(input);
-            return offlinePlayer != null;
+            String playerUUID = null;
+            try {
+                playerUUID = UserInfo.getParsedUUID(input);
+            }catch(Exception e) {
+                return false;
+            }
+            if(playerUUID == null) {
+                return false;
+            }
+            return true;
         }
 
         @Override
         protected Prompt acceptValidatedInput(ConversationContext context, String input) {
             Player sender = (Player) context.getForWhom();
 
+            String playerUUIDString = UserInfo.getParsedUUID(input);
+            UUID playerUUID = UUID.fromString(playerUUIDString);
+
             SimpleTournamentService simpleTournamentService = SimpleTournamentService.getInstance();
-            if(simpleTournamentService.addPlayerToTournament(editedTournament.getName(), input)) {
+            if(simpleTournamentService.addPlayerToTournament(editedTournament.getName(), playerUUID, input)) {
                 sender.sendMessage(ChatFormatter.formatSuccessMessage("Successfully added " + input + " to participants"));
             } else {
                 sender.sendMessage(ChatFormatter.formatErrorMessage("The player " + input + " is already a participant"));
@@ -118,7 +131,7 @@ public class TournamentSetupPrompt implements ConversationAbandonedListener {
 
         @Override
         protected String getFailedValidationText(ConversationContext context, String invalidInput) {
-            return "The player you specified doesn't exist";
+            return "The player you specified doesn't exist or the API call limit has been reached";
         }
 
     }
