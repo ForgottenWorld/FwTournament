@@ -4,6 +4,7 @@ import me.kaotich00.fwtournament.command.ArenaCommandManager;
 import me.kaotich00.fwtournament.command.TournamentCommandManager;
 import me.kaotich00.fwtournament.listener.arena.ArenaCreationListener;
 import me.kaotich00.fwtournament.listener.kit.KitGuiListener;
+import me.kaotich00.fwtournament.listener.tournament.PlayerListener;
 import me.kaotich00.fwtournament.storage.sqlite.SQLiteConnectionService;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -68,6 +69,7 @@ public final class Fwtournament extends JavaPlugin {
     public void registerListeners() {
         getServer().getPluginManager().registerEvents(new KitGuiListener(), this);
         getServer().getPluginManager().registerEvents(new ArenaCreationListener(), this);
+        getServer().getPluginManager().registerEvents(new PlayerListener(), this);
     }
 
     public void reloadDefaultConfig() {

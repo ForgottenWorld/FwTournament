@@ -87,6 +87,7 @@ public class SQLiteConnectionService {
                 "uuid  varchar(36)," +
                 "nickname  varchar(16)," +
                 "tournament_name  varchar(50)," +
+                "PRIMARY KEY (uuid)," +
                 "CONSTRAINT fk_fw_players_x_fw_tournament FOREIGN KEY (tournament_name) REFERENCES fw_tournament (name)" +
                 ");";
 
@@ -108,7 +109,8 @@ public class SQLiteConnectionService {
                 "player_two_battle_y  INTEGER," +
                 "player_two_battle_z  INTEGER," +
                 "player_two_battle_world  varchar," +
-                "is_occupied  INTEGER" +
+                "is_occupied  INTEGER," +
+                "PRIMARY KEY (name)" +
                 ")";
 
         tablesSql[5] = "CREATE TABLE IF NOT EXISTS fw_brackets (" +
@@ -117,7 +119,10 @@ public class SQLiteConnectionService {
                 "player_one_name  varchar(16)," +
                 "player_two_name  varchar(16)," +
                 "tournament_name  varchar(50)," +
-                "player_winner_uuid  varcar(36)," +
+                "player_winner_uuid  varchar(36)," +
+                "challonge_match_id  INTEGER," +
+                "first_player_challonge_id  varchar(20)," +
+                "second_player_challonge_id  varchar(20)," +
                 "CONSTRAINT fk_fw_brackets_x_fw_tournament FOREIGN KEY (tournament_name) REFERENCES fw_tournament (name)" +
                 ")";
 
@@ -235,7 +240,7 @@ public class SQLiteConnectionService {
                 Optional<Tournament> opTournament = simpleTournamentService.getTournament(tournamentName);
                 if(opTournament.isPresent()) {
                     Tournament tournament = opTournament.get();
-                    tournament.addPlayer(playerNickname,UUID.fromString(playerUUID));
+                    tournament.addPlayer(UUID.fromString(playerUUID), playerNickname);
                 }
             }
         } catch (SQLException e) {
@@ -250,12 +255,15 @@ public class SQLiteConnectionService {
              ResultSet rs    = stmt.executeQuery(sql)){
 
             while (rs.next()) {
+                String challongeMatchId = rs.getString("challonge_match_id");
                 String firstPlayerUUID = rs.getString("player_one_uuid");
                 String secondPlayerUUID = rs.getString("player_two_uuid");
                 String firstPlayerName = rs.getString("player_one_name");
                 String secondPlayerName = rs.getString("player_two_name");
                 String tournamentName = rs.getString("tournament_name");
                 String player_winner_uuid = rs.getString("player_winner_uuid");
+                String firstPlayerChallongeId = rs.getString("first_player_challonge_id");
+                String secondPlayerChallongeId = rs.getString("second_player_challonge_id");
 
                 SimpleTournamentService simpleTournamentService = SimpleTournamentService.getInstance();
                 simpleTournamentService.newTournament(tournamentName);
@@ -263,7 +271,7 @@ public class SQLiteConnectionService {
                 if(opTournament.isPresent()) {
                     Tournament tournament = opTournament.get();
 
-                    Bracket bracket = SimpleTournamentService.getInstance().pushNewBracket(tournament, firstPlayerName, UUID.fromString(firstPlayerUUID), secondPlayerName, UUID.fromString(secondPlayerUUID));
+                    Bracket bracket = SimpleTournamentService.getInstance().pushNewBracket(challongeMatchId, tournament, firstPlayerName, UUID.fromString(firstPlayerUUID), secondPlayerName, UUID.fromString(secondPlayerUUID), firstPlayerChallongeId, secondPlayerChallongeId);
 
                     if(player_winner_uuid != null) {
                         bracket.setWinner(UUID.fromString(player_winner_uuid));
@@ -347,6 +355,14 @@ public class SQLiteConnectionService {
                 System.out.println(e.getMessage());
             }
 
+            String deleteKitSql = "DELETE FROM fw_kit";
+            try (Connection conn = this.connect(plugin, dbName);
+                 PreparedStatement pstmt = conn.prepareStatement(deleteKitSql)) {
+                pstmt.executeUpdate();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
+
             String insertKitsSql = "INSERT INTO fw_kit(itemstack,tournament_name) VALUES(?,?)";
             try (Connection conn = this.connect(plugin, dbName);
                  PreparedStatement pstmt = conn.prepareStatement(insertKitsSql)) {
@@ -359,12 +375,12 @@ public class SQLiteConnectionService {
                 System.out.println(e.getMessage());
             }
 
-            String insertPlayersSql = "INSERT INTO fw_players(uuid,nickname,tournament_name) VALUES(?,?,?)";
+            String insertPlayersSql = "INSERT OR IGNORE INTO fw_players(uuid,nickname,tournament_name) VALUES(?,?,?)";
             try (Connection conn = this.connect(plugin, dbName);
                  PreparedStatement pstmt = conn.prepareStatement(insertPlayersSql)) {
-                for (Map.Entry<String, UUID> player : tournament.getPlayersList().entrySet()) {
-                    String playerName = player.getKey();
-                    String playerUUID = player.getValue().toString();
+                for (Map.Entry<UUID, String> player : tournament.getPlayersList().entrySet()) {
+                    String playerUUID = player.getKey().toString();
+                    String playerName = player.getValue();
                     pstmt.setString(1, playerUUID);
                     pstmt.setString(2, playerName);
                     pstmt.setString(3, tournament.getName());
@@ -374,7 +390,15 @@ public class SQLiteConnectionService {
                 System.out.println(e.getMessage());
             }
 
-            String insertBracketSql = "INSERT INTO fw_brackets(player_one_uuid,player_two_uuid,player_one_name,player_two_name,tournament_name,player_winner_uuid) VALUES (?,?,?,?,?,?)";
+            String deleteBracketSql = "DELETE FROM fw_brackets";
+            try (Connection conn = this.connect(plugin, dbName);
+                 PreparedStatement pstmt = conn.prepareStatement(deleteBracketSql)) {
+                pstmt.executeUpdate();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
+
+            String insertBracketSql = "INSERT OR IGNORE INTO fw_brackets(player_one_uuid,player_two_uuid,player_one_name,player_two_name,tournament_name,player_winner_uuid,challonge_match_id, first_player_challonge_id, second_player_challonge_id) VALUES (?,?,?,?,?,?,?,?,?)";
             try (Connection conn = this.connect(plugin, dbName);
                  PreparedStatement pstmt = conn.prepareStatement(insertBracketSql)) {
                 for (Bracket bracket: tournament.getBracketsList()) {
@@ -384,6 +408,9 @@ public class SQLiteConnectionService {
                     pstmt.setString(4, bracket.getSecondPlayerName());
                     pstmt.setString(5, tournament.getName());
                     pstmt.setString(6, bracket.getWinner() != null ? bracket.getWinner().toString() : null);
+                    pstmt.setInt(7, Integer.parseInt(bracket.getChallongeMatchId()));
+                    pstmt.setString(8, bracket.getFirstPlayerChallongeId());
+                    pstmt.setString(9, bracket.getSecondPlayerChallongeId());
 
                     pstmt.executeUpdate();
                 }
@@ -391,7 +418,7 @@ public class SQLiteConnectionService {
                 System.out.println(e.getMessage());
             }
 
-            String insertArenaSql = "INSERT INTO fw_arena(name, " +
+            String insertArenaSql = "INSERT OR IGNORE INTO fw_arena(name, " +
                                     "player_one_spawn_x, player_one_spawn_y, player_one_spawn_z, player_one_spawn_world," +
                                     "player_two_spawn_x, player_two_spawn_y, player_two_spawn_z, player_two_spawn_world," +
                                     "player_one_battle_x, player_one_battle_y, player_one_battle_z, player_one_battle_world," +

@@ -29,7 +29,7 @@ public class HTTPClient {
             conn.setDoInput(true);
             conn.setDoOutput(true);
 
-            if(requestMethod.equals("POST")) {
+            if(requestMethod.equals("POST") || requestMethod.equals("PUT")) {
                 conn.setRequestProperty("Content-Type", "multipart/form-data");
                 conn.setRequestProperty("Connection", "keep-alive");
 

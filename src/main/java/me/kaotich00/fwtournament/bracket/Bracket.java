@@ -4,19 +4,30 @@ import java.util.UUID;
 
 public class Bracket {
 
+    private String tournamentName;
+
+    private String challongeMatchId;
+
     private String firstPlayerName;
+    private String firstPlayerChallongeId;
     private UUID firstPlayerUUID;
 
     private String secondPlayerName;
+    private String secondPlayerChallongeId;
     private UUID secondPlayerUUID;
 
     private UUID winner = null;
+    private String winnerChallongeId;
 
-    public Bracket(String firstPlayerName, UUID firstPlayerUUID, String secondPlayerName, UUID secondPlayerUUID) {
+    public Bracket(String challongeMatchId, String tournamentName, String firstPlayerName, String firstPlayerChallongeId, UUID firstPlayerUUID, String secondPlayerName, String secondPlayerChallongeId, UUID secondPlayerUUID) {
+        this.challongeMatchId = challongeMatchId;
+        this.tournamentName = tournamentName;
         this.firstPlayerName = firstPlayerName;
         this.firstPlayerUUID = firstPlayerUUID;
+        this.firstPlayerChallongeId = firstPlayerChallongeId;
         this.secondPlayerName = secondPlayerName;
         this.secondPlayerUUID = secondPlayerUUID;
+        this.secondPlayerChallongeId = secondPlayerChallongeId;
     }
 
     public String getFirstPlayerName() {
@@ -57,6 +68,46 @@ public class Bracket {
 
     public void setWinner(UUID winner) {
         this.winner = winner;
+    }
+
+    public String getTournamentName() {
+        return tournamentName;
+    }
+
+    public void setTournamentName(String tournamentName) {
+        this.tournamentName = tournamentName;
+    }
+
+    public String getChallongeMatchId() {
+        return challongeMatchId;
+    }
+
+    public void setChallongeMatchId(String challongeMatchId) {
+        this.challongeMatchId = challongeMatchId;
+    }
+
+    public String getFirstPlayerChallongeId() {
+        return firstPlayerChallongeId;
+    }
+
+    public void setFirstPlayerChallongeId(String firstPlayerChallongeId) {
+        this.firstPlayerChallongeId = firstPlayerChallongeId;
+    }
+
+    public String getSecondPlayerChallongeId() {
+        return secondPlayerChallongeId;
+    }
+
+    public void setSecondPlayerChallongeId(String secondPlayerChallongeId) {
+        this.secondPlayerChallongeId = secondPlayerChallongeId;
+    }
+
+    public String getWinnerChallongeId() {
+        return winnerChallongeId;
+    }
+
+    public void setWinnerChallongeId(String winnerChallongeId) {
+        this.winnerChallongeId = winnerChallongeId;
     }
 
 }

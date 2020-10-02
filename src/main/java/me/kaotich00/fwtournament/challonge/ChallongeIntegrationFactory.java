@@ -2,6 +2,8 @@ package me.kaotich00.fwtournament.challonge;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import com.james090500.APIManager.UserInfo;
+import me.kaotich00.fwtournament.bracket.Bracket;
 import me.kaotich00.fwtournament.challonge.objects.ChallongeTournament;
 import me.kaotich00.fwtournament.http.HTTPClient;
 import me.kaotich00.fwtournament.services.SimpleTournamentService;
@@ -14,6 +16,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.math.BigInteger;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -64,8 +67,8 @@ public class ChallongeIntegrationFactory {
 
         Multimap<String,String> postDataParams = ArrayListMultimap.create();
         postDataParams.put("api_key", HTTPUtils.API_KEY);
-        for(String playerName : tournament.getPlayersList().keySet()) {
-            postDataParams.put("participants[][name]", playerName);
+        for(Map.Entry<UUID,String> entry : tournament.getPlayersList().entrySet()) {
+            postDataParams.put("participants[][name]", entry.getValue());
         }
 
         String URI = HTTPUtils.CHALLONGE_ADD_PARTICIPANTS_ENDPOINT.replace("{tournament}",challongeTournament.getId().toString());
@@ -102,6 +105,7 @@ public class ChallongeIntegrationFactory {
 
     public static void getTournamentBrackets(Player sender, Tournament tournament) throws ParseException {
         ChallongeTournament challongeTournament = tournament.getChallongeTournament();
+        tournament.clearBrackets();
 
         Multimap<String,String> postDataParams = ArrayListMultimap.create();
         postDataParams.put("api_key", HTTPUtils.API_KEY);
@@ -119,16 +123,17 @@ public class ChallongeIntegrationFactory {
                 JSONObject match = (JSONObject) responseData.get(i);
                 match = (JSONObject) match.get("match");
 
+                String matchId = match.get("id").toString();
                 String playerOneId = match.get("player1_id").toString();
                 String playerTwoId = match.get("player2_id").toString();
 
                 String playerOneName = getParticipantName(sender, tournament, playerOneId);
                 String playerTwoName = getParticipantName(sender, tournament, playerTwoId);
 
-                UUID playerOneUUID = tournament.getPlayersList().get(playerOneName);
-                UUID playerTwoUUID = tournament.getPlayersList().get(playerTwoName);
+                UUID playerOneUUID = UUID.fromString(UserInfo.getParsedUUID(playerOneName));
+                UUID playerTwoUUID = UUID.fromString(UserInfo.getParsedUUID(playerTwoName));
 
-                SimpleTournamentService.getInstance().pushNewBracket(tournament, playerOneName, playerOneUUID, playerTwoName, playerTwoUUID);
+                SimpleTournamentService.getInstance().pushNewBracket(matchId, tournament, playerOneName, playerOneUUID, playerTwoName, playerTwoUUID, playerOneId, playerTwoId);
             }
         } catch(Exception e) {
             e.printStackTrace();
@@ -157,6 +162,31 @@ public class ChallongeIntegrationFactory {
         JSONObject playerData = (JSONObject) responseData.get("participant");
         String playerName = playerData.get("name").toString();
         return playerName;
+    }
+
+    public static void updateMatchResult(Player sender, Tournament tournament, Bracket bracket) throws ParseException {
+        ChallongeTournament challongeTournament = tournament.getChallongeTournament();
+
+        Multimap<String,String> postDataParams = ArrayListMultimap.create();
+        postDataParams.put("api_key", HTTPUtils.API_KEY);
+        if(bracket.getWinner().equals(bracket.getFirstPlayerUUID())) {
+            postDataParams.put("match[scores_csv]", "1-0");
+        } else {
+            postDataParams.put("match[scores_csv]", "0-1");
+        }
+        postDataParams.put("match[winner_id]", bracket.getWinnerChallongeId());
+
+        String URI = HTTPUtils.CHALLONGE_POST_MATCH_RESULT.replace("{tournament}",challongeTournament.getId().toString()).replace("{match_id}", bracket.getChallongeMatchId());
+        String requestMethod = "PUT";
+
+        String response = HTTPClient.fetchHttpRequest(URI, requestMethod, postDataParams, sender);
+        JSONParser parser = new JSONParser();
+        JSONObject responseData = null;
+        try {
+            responseData = (JSONObject) parser.parse(response);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }

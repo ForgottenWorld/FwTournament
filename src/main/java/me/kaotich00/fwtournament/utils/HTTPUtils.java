@@ -11,5 +11,6 @@ public class HTTPUtils {
     public static final String CHALLONGE_START_TOURNAMENT_ENDPOINT = "https://api.challonge.com/v1/tournaments/{tournament}/start.json";
     public static final String CHALLONGE_GET_TOURNAMENT_MATCHES_ENDPOINT = "https://api.challonge.com/v1/tournaments/{tournament}/matches.json";
     public static final String CHALLONGE_GET_MATCH_PARTICIPANTS = "https://api.challonge.com/v1/tournaments/{tournament}/participants/{player}.json";
+    public static final String CHALLONGE_POST_MATCH_RESULT = "https://api.challonge.com/v1/tournaments/{tournament}/matches/{match_id}.{json|xml}";
 
 }

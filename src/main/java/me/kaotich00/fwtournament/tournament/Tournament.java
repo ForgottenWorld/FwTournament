@@ -6,11 +6,12 @@ import me.kaotich00.fwtournament.kit.Kit;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Tournament {
 
     private String name;
-    private Map<String, UUID> playersList;
+    private Map<UUID, String> playersList;
     private Set<Bracket> bracketsList;
     private Kit tournamentKit;
     private ChallongeTournament challongeTournament;
@@ -25,8 +26,8 @@ public class Tournament {
         this.tournamentKit = new Kit();
     }
 
-    public void addPlayer(String playerName, UUID uuid) {
-        playersList.put(playerName, uuid);
+    public void addPlayer(UUID uuid, String playerName) {
+        playersList.put(uuid, playerName);
     }
 
     public void removePlayer(String playerName) { playersList.remove(playerName); }
@@ -39,13 +40,15 @@ public class Tournament {
         return name;
     }
 
-    public Map<String, UUID> getPlayersList() {
+    public Map<UUID, String> getPlayersList() {
         return playersList;
     }
 
     public Set<Bracket> getBracketsList() {
         return bracketsList;
     }
+
+    public Set<Bracket> getRemainingBrackets() { return bracketsList.stream().filter(bracket -> bracket.getWinner() == null).collect(Collectors.toSet()); }
 
     public Kit getKit() {
         return this.tournamentKit;
@@ -74,5 +77,7 @@ public class Tournament {
     public void setStarted(boolean started) {
         isStarted = started;
     }
+
+    public void clearBrackets() { this.bracketsList.clear(); }
 
 }
