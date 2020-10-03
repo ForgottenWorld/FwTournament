@@ -9,6 +9,7 @@ import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.tournament.Tournament;
 import me.kaotich00.fwtournament.utils.HTTPUtils;
 import me.kaotich00.fwtournament.utils.UUIDUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -121,7 +122,15 @@ public class ChallongeIntegrationFactory {
         try {
             responseData = (JSONArray) parser.parse(response);
 
-            // Qua il controllo se è finito il torneo
+            // If response size is empty
+            // the tournament has ended
+            // Therefore the winner is announced
+            if(responseData.size() == 0) {
+                // Close the tournament
+                endTournament(sender, tournament);
+
+                Bukkit.getServer().broadcastMessage("The tournament has ended");
+            }
 
             for(int i = 0; i < responseData.size(); i++) {
                 JSONObject match = (JSONObject) responseData.get(i);
@@ -186,6 +195,25 @@ public class ChallongeIntegrationFactory {
         String requestMethod = "PUT";
 
         HTTPClient.fetchHttpRequest(URI, requestMethod, postDataParams, sender);
+    }
+
+    public static void endTournament(Player sender, Tournament tournament) throws ParseException {
+        ChallongeTournament challongeTournament = tournament.getChallongeTournament();
+
+        Multimap<String,String> postDataParams = ArrayListMultimap.create();
+        postDataParams.put("api_key", HTTPUtils.API_KEY);
+
+        String URI = HTTPUtils.CHALLONGE_END_TOURNAMENT.replace("{tournament}",challongeTournament.getId().toString());
+        String requestMethod = "POST";
+
+        String response = HTTPClient.fetchHttpRequest(URI, requestMethod, postDataParams, sender);
+        JSONParser parser = new JSONParser();
+        JSONObject responseData = null;
+        try {
+            responseData = (JSONObject) parser.parse(response);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }

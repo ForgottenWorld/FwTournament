@@ -53,7 +53,7 @@ public class InfoCommand extends AdminCommand {
 
 
         } else {
-            sender.sendMessage(ChatFormatter.formatErrorMessage("Error: no tournament with the following name exists"));
+            sender.sendMessage(ChatFormatter.formatErrorMessage("Error: no tournament with the given name exists"));
         }
     }
 
