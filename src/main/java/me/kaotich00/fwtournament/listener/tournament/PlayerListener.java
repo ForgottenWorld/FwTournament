@@ -112,13 +112,18 @@ public class PlayerListener implements Listener {
         SimpleTournamentService.getInstance().startBracket(playerBracket);
 
         // Run battle timer
+        playerTournament.startBattleTimer(freeArena, playerBracket);
     }
 
     @EventHandler
     public void onPlayerDeathListener(PlayerDeathEvent event) throws ParseException {
         Player player = event.getEntity();
 
-        List<Bracket> activeBrackets = SimpleTournamentService.getInstance().getActiveBrackets();
+        if(!(event.getEntity().getKiller() instanceof Player)) {
+            return;
+        }
+
+        Set<Bracket> activeBrackets = SimpleTournamentService.getInstance().getActiveBrackets();
 
         if(activeBrackets.isEmpty()) {
             return;
@@ -135,8 +140,10 @@ public class PlayerListener implements Listener {
             }
 
             if(bracket.getWinner() != null) {
-                Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The winner is " + Bukkit.getServer().getPlayer(bracket.getWinner()).getName()));
-                Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage(Bukkit.getServer().getPlayer(bracket.getWinner()).getName() + " qualified for next turn"));
+                //Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The winner is " + Bukkit.getServer().getPlayer(bracket.getWinner()).getName()));
+                //Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage(Bukkit.getServer().getPlayer(bracket.getWinner()).getName() + " qualified for next turn"));
+            } else {
+                continue;
             }
 
             Tournament tournament = SimpleTournamentService.getInstance().getTournament(bracket.getTournamentName()).get();

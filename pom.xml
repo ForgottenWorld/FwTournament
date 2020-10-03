@@ -42,7 +42,7 @@
                         <configuration>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
-                            <outputDirectory>C:\Users\Simone\Desktop\Server paper\plugins</outputDirectory>
+                            <outputDirectory>z:\Users\Simone R\Desktop\Spigot\plugins</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>

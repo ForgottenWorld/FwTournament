@@ -10,7 +10,7 @@ public class SimpleTournamentService {
     private HashMap<String, Tournament> tournamentList;
     private static SimpleTournamentService simpleTournamentService;
     private HashMap<UUID, Tournament> currentModifyingPlayer;
-    private List<Bracket> activeBrackets;
+    private Set<Bracket> activeBrackets;
 
     private SimpleTournamentService() {
         if(simpleTournamentService != null) {
@@ -18,7 +18,7 @@ public class SimpleTournamentService {
         }
         this.tournamentList = new HashMap<>();
         this.currentModifyingPlayer = new HashMap<>();
-        this.activeBrackets = new ArrayList<>();
+        this.activeBrackets = new HashSet<>();
     }
 
     public static SimpleTournamentService getInstance() {
@@ -100,7 +100,7 @@ public class SimpleTournamentService {
         this.activeBrackets.add(bracket);
     }
 
-    public List<Bracket> getActiveBrackets() {
+    public Set<Bracket> getActiveBrackets() {
         return this.activeBrackets;
     }
 

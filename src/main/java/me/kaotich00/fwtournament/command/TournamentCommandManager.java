@@ -1,10 +1,7 @@
 package me.kaotich00.fwtournament.command;
 
 import me.kaotich00.fwtournament.Fwtournament;
-import me.kaotich00.fwtournament.command.tournament.GenerateCommand;
-import me.kaotich00.fwtournament.command.tournament.NewCommand;
-import me.kaotich00.fwtournament.command.tournament.SetupCommand;
-import me.kaotich00.fwtournament.command.tournament.StartCommand;
+import me.kaotich00.fwtournament.command.tournament.*;
 import me.kaotich00.fwtournament.services.SimpleArenaService;
 import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
@@ -36,6 +33,7 @@ public class TournamentCommandManager implements TabExecutor {
         this.commandRegistry.put(CommandTypes.TORNEO_SETUP_COMMAND, new SetupCommand());
         this.commandRegistry.put(CommandTypes.TORNEO_GENERATE_COMMAND, new GenerateCommand());
         this.commandRegistry.put(CommandTypes.TORNEO_START_COMMAND, new StartCommand());
+        this.commandRegistry.put(CommandTypes.TORNEO_INFO_COMMAND, new InfoCommand());
     }
 
     private Command getCommand(String name) {

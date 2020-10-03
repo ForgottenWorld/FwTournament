@@ -9,6 +9,7 @@ public class CommandTypes {
     public static final String TORNEO_SETUP_COMMAND = "setup";
     public static final String TORNEO_GENERATE_COMMAND = "generate";
     public static final String TORNEO_START_COMMAND = "start";
+    public static final String TORNEO_INFO_COMMAND = "info";
 
     public static final String ARENA_NEW_COMMAND = "new";
 
