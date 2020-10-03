@@ -79,9 +79,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.ForgottenWorld</groupId>
-            <artifactId>JamesMojangAPI</artifactId>
-            <version>39d5862d5c448c2da0fd675bee3c6c7697a07d1b</version>
+            <groupId>com.github.SparklingComet</groupId>
+            <artifactId>java-mojang-api</artifactId>
+            <version>97bc9add82</version>
         </dependency>
     </dependencies>
 </project>

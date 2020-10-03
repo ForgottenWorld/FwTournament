@@ -6,7 +6,6 @@ import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.tournament.Tournament;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
 import me.kaotich00.fwtournament.utils.ColorUtil;
-import org.bukkit.Color;
 import org.bukkit.command.CommandSender;
 
 import java.util.Optional;

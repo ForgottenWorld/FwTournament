@@ -2,18 +2,19 @@ package me.kaotich00.fwtournament.challonge;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import com.james090500.APIManager.UserInfo;
 import me.kaotich00.fwtournament.bracket.Bracket;
 import me.kaotich00.fwtournament.challonge.objects.ChallongeTournament;
 import me.kaotich00.fwtournament.http.HTTPClient;
 import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.tournament.Tournament;
 import me.kaotich00.fwtournament.utils.HTTPUtils;
+import me.kaotich00.fwtournament.utils.UUIDUtils;
 import org.bukkit.entity.Player;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.shanerx.mojang.Mojang;
 
 import java.math.BigInteger;
 import java.util.Map;
@@ -133,8 +134,10 @@ public class ChallongeIntegrationFactory {
                 String playerOneName = getParticipantName(sender, tournament, playerOneId);
                 String playerTwoName = getParticipantName(sender, tournament, playerTwoId);
 
-                UUID playerOneUUID = UUID.fromString(UserInfo.getParsedUUID(playerOneName));
-                UUID playerTwoUUID = UUID.fromString(UserInfo.getParsedUUID(playerTwoName));
+                Mojang api = new Mojang().connect();
+
+                UUID playerOneUUID = UUID.fromString(UUIDUtils.parseUUID(api.getUUIDOfUsername(playerOneName)));
+                UUID playerTwoUUID = UUID.fromString(UUIDUtils.parseUUID(api.getUUIDOfUsername(playerTwoName)));
 
                 SimpleTournamentService.getInstance().pushNewBracket(matchId, tournament, playerOneName, playerOneUUID, playerTwoName, playerTwoUUID, playerOneId, playerTwoId);
             }

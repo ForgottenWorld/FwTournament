@@ -1,17 +1,18 @@
 package me.kaotich00.fwtournament.tournament.setup;
 
-import com.james090500.APIManager.UserInfo;
 import me.kaotich00.fwtournament.Fwtournament;
 import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.kit.gui.KitGUI;
 import me.kaotich00.fwtournament.tournament.Tournament;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
 import me.kaotich00.fwtournament.utils.ColorUtil;
+import me.kaotich00.fwtournament.utils.UUIDUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.conversations.*;
 import org.bukkit.entity.Player;
+import org.shanerx.mojang.Mojang;
 
 import java.util.UUID;
 
@@ -101,9 +102,14 @@ public class TournamentSetupPrompt implements ConversationAbandonedListener {
 
         @Override
         protected boolean isInputValid(ConversationContext context, String input) {
+            Player sender = (Player) context.getForWhom();
+
+            sender.sendMessage(ChatFormatter.formatSuccessMessage("Validanting minecraft username..."));
+
+            Mojang api = new Mojang().connect();
             String playerUUID = null;
             try {
-                playerUUID = UserInfo.getParsedUUID(input);
+                playerUUID = api.getUUIDOfUsername(input);
             }catch(Exception e) {
                 return false;
             }
@@ -117,7 +123,8 @@ public class TournamentSetupPrompt implements ConversationAbandonedListener {
         protected Prompt acceptValidatedInput(ConversationContext context, String input) {
             Player sender = (Player) context.getForWhom();
 
-            String playerUUIDString = UserInfo.getParsedUUID(input);
+            Mojang api = new Mojang().connect();
+            String playerUUIDString = UUIDUtils.parseUUID(api.getUUIDOfUsername(input));
             UUID playerUUID = UUID.fromString(playerUUIDString);
 
             SimpleTournamentService simpleTournamentService = SimpleTournamentService.getInstance();

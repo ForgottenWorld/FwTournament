@@ -140,8 +140,8 @@ public class PlayerListener implements Listener {
             }
 
             if(bracket.getWinner() != null) {
-                //Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The winner is " + Bukkit.getServer().getPlayer(bracket.getWinner()).getName()));
-                //Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage(Bukkit.getServer().getPlayer(bracket.getWinner()).getName() + " qualified for next turn"));
+                Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The winner is " + Bukkit.getServer().getPlayer(bracket.getWinner()).getName()));
+                Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage(Bukkit.getServer().getPlayer(bracket.getWinner()).getName() + " qualified for next turn"));
             } else {
                 continue;
             }
