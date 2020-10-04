@@ -136,9 +136,23 @@ public class SimpleTournamentService {
         HashMap<String, Tournament> tournamentsList = SimpleTournamentService.getInstance().getTournamentList();
         for(Map.Entry<String,Tournament> entry : tournamentsList.entrySet()) {
             Tournament tournament = entry.getValue();
-            for(UUID playerUUID : tournament.getPlayersList().keySet()) {
-                if(Bukkit.getPlayer(playerUUID) != null) {
-                    checkMatchmakingStatus(Bukkit.getPlayer(playerUUID));
+            for(Bracket bracket : tournament.getBracketsList()) {
+
+                if(bracket.getWinner() != null) {
+                    continue;
+                }
+
+                UUID firstPlayerUUID = bracket.getFirstPlayerUUID();
+                UUID secondPlayerUUID = bracket.getSecondPlayerUUID();
+
+                if(Bukkit.getPlayer(firstPlayerUUID) != null) {
+                    checkMatchmakingStatus(Bukkit.getPlayer(firstPlayerUUID));
+                    continue;
+                }
+
+                if(Bukkit.getPlayer(secondPlayerUUID) != null) {
+                    checkMatchmakingStatus(Bukkit.getPlayer(secondPlayerUUID));
+                    continue;
                 }
             }
         }
@@ -239,6 +253,7 @@ public class SimpleTournamentService {
 
             // Set the arena as occupied
             finalFreeArena.setOccupied(true);
+            SimpleArenaService.getInstance().addToOccupiedArenas(finalPlayerBracket, finalFreeArena);
 
             // Add bracket as active
             SimpleTournamentService.getInstance().startBracket(finalPlayerBracket);
@@ -249,7 +264,7 @@ public class SimpleTournamentService {
         }, 200L);
     }
 
-    public void checkTournamentDeath(Player player) throws ParseException, ExecutionException, InterruptedException {
+    public void checkTournamentDeath(Player player) throws ExecutionException, InterruptedException {
 
         for(Tournament tournament : SimpleTournamentService.getInstance().getStartedTournaments()) {
             for(Bracket bracket: tournament.getBracketsList()) {
@@ -283,7 +298,9 @@ public class SimpleTournamentService {
                     try {
                         ChallongeIntegrationFactory.updateMatchResult(player, tournament, bracket);
 
-                        SimpleTournamentService.getInstance().startBracket(bracket);
+                        HashMap<Bracket,Arena> occupiedArenas = SimpleArenaService.getInstance().getOccupiedArenas();
+                        Arena occupiedArena = occupiedArenas.get(bracket);
+                        occupiedArena.setOccupied(false);
 
                         // This means every bracket has a winner.
                         // Therefore new brackets need to be

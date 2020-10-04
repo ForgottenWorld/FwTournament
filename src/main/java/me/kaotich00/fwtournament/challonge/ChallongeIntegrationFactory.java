@@ -5,6 +5,7 @@ import com.google.common.collect.Multimap;
 import me.kaotich00.fwtournament.bracket.Bracket;
 import me.kaotich00.fwtournament.challonge.objects.ChallongeTournament;
 import me.kaotich00.fwtournament.http.HTTPClient;
+import me.kaotich00.fwtournament.services.SimpleArenaService;
 import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.tournament.Tournament;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
@@ -159,6 +160,8 @@ public class ChallongeIntegrationFactory {
 
                 SimpleTournamentService.getInstance().pushNewBracket(matchId, tournament, playerOneName, playerOneUUID, playerTwoName, playerTwoUUID, playerOneId, playerTwoId);
             }
+
+            SimpleTournamentService.getInstance().checkForNewMatchmakings();
         } catch(Exception e) {
             e.printStackTrace();
         }
