@@ -38,6 +38,8 @@ public class StartCommand extends AdminCommand {
                     sender.sendMessage(ChatFormatter.formatSuccessMessage("Collecting current brackets..."));
                     ChallongeIntegrationFactory.getTournamentBrackets((Player) sender, tournament);
                     sender.sendMessage(ChatFormatter.formatSuccessMessage("Brackets collected!"));
+
+                    SimpleTournamentService.getInstance().checkForNewMatchmakings();
                 } catch (ParseException e) {
                     sender.sendMessage(ChatFormatter.formatErrorMessage("Error while starting tournament! Is it already started?"));
                 }

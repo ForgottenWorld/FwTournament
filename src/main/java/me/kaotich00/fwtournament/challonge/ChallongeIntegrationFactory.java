@@ -206,14 +206,7 @@ public class ChallongeIntegrationFactory {
         String URI = HTTPUtils.CHALLONGE_END_TOURNAMENT.replace("{tournament}",challongeTournament.getId().toString());
         String requestMethod = "POST";
 
-        String response = HTTPClient.fetchHttpRequest(URI, requestMethod, postDataParams, sender);
-        JSONParser parser = new JSONParser();
-        JSONObject responseData = null;
-        try {
-            responseData = (JSONObject) parser.parse(response);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
+        HTTPClient.fetchHttpRequest(URI, requestMethod, postDataParams, sender);
     }
 
 }

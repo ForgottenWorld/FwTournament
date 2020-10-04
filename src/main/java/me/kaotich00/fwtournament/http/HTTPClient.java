@@ -26,20 +26,18 @@ public class HTTPClient {
             conn.setReadTimeout(150000);
             conn.setConnectTimeout(150000);
             conn.setRequestMethod(requestMethod);
-            conn.setDoInput(true);
             conn.setDoOutput(true);
 
             if(requestMethod.equals("PUT")) {
-                conn.setRequestProperty("Content-Type", "application/json");
+                conn.setRequestProperty("Content-Type", "multipart/form-data");
                 conn.setRequestProperty("Connection", "keep-alive");
 
-                OutputStream os = conn.getOutputStream();
-                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
-                writer.write(formatPostDataParams(postDataParams));
+                OutputStreamWriter out = new OutputStreamWriter(conn.getOutputStream());
+                out.write(formatPostDataParams(postDataParams));
+                out.close();
 
-                writer.flush();
-                writer.close();
-                os.close();
+            } else {
+                conn.setDoInput(true);
             }
 
             if(requestMethod.equals("POST")) {
