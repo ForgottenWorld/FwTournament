@@ -7,6 +7,7 @@ import me.kaotich00.fwtournament.challonge.objects.ChallongeTournament;
 import me.kaotich00.fwtournament.http.HTTPClient;
 import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.tournament.Tournament;
+import me.kaotich00.fwtournament.utils.ChatFormatter;
 import me.kaotich00.fwtournament.utils.HTTPUtils;
 import me.kaotich00.fwtournament.utils.UUIDUtils;
 import org.bukkit.Bukkit;
@@ -21,6 +22,7 @@ import java.math.BigInteger;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class ChallongeIntegrationFactory {
 
@@ -126,10 +128,17 @@ public class ChallongeIntegrationFactory {
             // the tournament has ended
             // Therefore the winner is announced
             if(responseData.size() == 0) {
-                // Close the tournament
-                endTournament(sender, tournament);
+                CompletableFuture<Void> completableFuture = CompletableFuture.runAsync(() -> {
+                    // Close the tournament
+                    try {
+                        endTournament(sender, tournament);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
 
-                Bukkit.getServer().broadcastMessage("The tournament has ended");
+                    Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The tournament has ended!"));
+                });
+                completableFuture.get();
             }
 
             for(int i = 0; i < responseData.size(); i++) {

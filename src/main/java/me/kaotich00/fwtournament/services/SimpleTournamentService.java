@@ -14,6 +14,8 @@ import org.bukkit.inventory.ItemStack;
 import org.json.simple.parser.ParseException;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 public class SimpleTournamentService {
 
@@ -209,7 +211,7 @@ public class SimpleTournamentService {
             return;
         }
 
-        Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The math between " + playerBracket.getFirstPlayerName() + " and " + playerBracket.getSecondPlayerName() + " will start in 10 seconds"));
+        Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The math between " + playerBracket.getFirstPlayerName() + " and " + playerBracket.getSecondPlayerName() + " has been detected. Teleporting players in 10 seconds."));
 
         Bracket finalPlayerBracket = playerBracket;
         Arena finalFreeArena = freeArena;
@@ -247,7 +249,7 @@ public class SimpleTournamentService {
         }, 200L);
     }
 
-    public void checkTournamentDeath(Player player) throws ParseException {
+    public void checkTournamentDeath(Player player) throws ParseException, ExecutionException, InterruptedException {
 
         for(Tournament tournament : SimpleTournamentService.getInstance().getStartedTournaments()) {
             for(Bracket bracket: tournament.getBracketsList()) {
@@ -277,17 +279,26 @@ public class SimpleTournamentService {
                 Tournament tournament = SimpleTournamentService.getInstance().getTournament(bracket.getTournamentName()).get();
                 Set<Bracket> remainingBrackets = tournament.getRemainingBrackets();
 
-                ChallongeIntegrationFactory.updateMatchResult(player, tournament, bracket);
-                SimpleTournamentService.getInstance().startBracket(bracket);
+                CompletableFuture<Void> completableFuture = CompletableFuture.runAsync(() -> {
+                    try {
+                        ChallongeIntegrationFactory.updateMatchResult(player, tournament, bracket);
 
-                // This means every bracket has a winner.
-                // Therefore new brackets need to be
-                // generated
-                if(remainingBrackets.isEmpty()) {
-                    ChallongeIntegrationFactory.getTournamentBrackets(null, tournament);
-                } else {
-                    checkForNewMatchmakings();
-                }
+                        SimpleTournamentService.getInstance().startBracket(bracket);
+
+                        // This means every bracket has a winner.
+                        // Therefore new brackets need to be
+                        // generated
+                        if (remainingBrackets.isEmpty()) {
+                            Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("Tournament round is over"));
+                            ChallongeIntegrationFactory.getTournamentBrackets(null, tournament);
+                        } else {
+                            checkForNewMatchmakings();
+                        }
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                });
+                completableFuture.get();
             } else {
                 continue;
             }
