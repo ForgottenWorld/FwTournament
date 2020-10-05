@@ -1,9 +1,12 @@
 package me.kaotich00.fwtournament.services;
 
+import me.kaotich00.fwtournament.Fwtournament;
 import me.kaotich00.fwtournament.bracket.Bracket;
+import me.kaotich00.fwtournament.storage.sqlite.SQLiteConnectionService;
 import me.kaotich00.fwtournament.tournament.Tournament;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SimpleTournamentService {
 
@@ -102,6 +105,15 @@ public class SimpleTournamentService {
 
     public List<Bracket> getActiveBrackets() {
         return this.activeBrackets;
+    }
+
+    public void endTournament(Tournament tournament) {
+        this.tournamentList.remove(tournament.getName());
+
+        List<Bracket> tournamentBrackets = this.activeBrackets.stream().filter(bracket -> bracket.getTournamentName().equals(tournament.getName())).collect(Collectors.toList());
+        this.activeBrackets.removeAll(tournamentBrackets);
+
+        SQLiteConnectionService.getInstance().deleteTournament(Fwtournament.getPlugin(Fwtournament.class), "fwtournament", tournament);
     }
 
 }

@@ -480,4 +480,36 @@ public class SQLiteConnectionService {
         }
     }
 
+    public void deleteTournament(Fwtournament plugin, String dbName, Tournament tournament) {
+        String deleteKitSql = "DELETE FROM fw_kit WHERE tournament_name = ?";
+        String deletePlayersSql = "DELETE FROM fw_players WHERE tournament_name = ?";
+        String deleteBracktsSql = "DELETE FROM fw_brackets WHERE tournament_name = ?";
+        String deleteChallongeTournament = "DELETE FROM fw_challonge_tournament WHERE id = (SELECT id_challonge FROM fw_tournament WHERE name = ? LIMIT 1)";
+        String deleteTournament = "DELETE FROM fw_tournament WHERE name = ?";
+
+        try (Connection conn = this.connect(plugin, dbName)) {
+            PreparedStatement pstmt = conn.prepareStatement(deleteKitSql);
+            pstmt.setString(1, tournament.getName());
+            pstmt.executeUpdate();
+
+            pstmt = conn.prepareStatement(deletePlayersSql);
+            pstmt.setString(1, tournament.getName());
+            pstmt.executeUpdate();
+
+            pstmt = conn.prepareStatement(deleteBracktsSql);
+            pstmt.setString(1, tournament.getName());
+            pstmt.executeUpdate();
+
+            pstmt = conn.prepareStatement(deleteChallongeTournament);
+            pstmt.setString(1, tournament.getName());
+            pstmt.executeUpdate();
+
+            pstmt = conn.prepareStatement(deleteTournament);
+            pstmt.setString(1, tournament.getName());
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
 }
