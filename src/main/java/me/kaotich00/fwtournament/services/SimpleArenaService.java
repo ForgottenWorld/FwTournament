@@ -6,7 +6,9 @@ import me.kaotich00.fwtournament.utils.ChatFormatter;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Optional;
+import java.util.UUID;
 
 public class SimpleArenaService {
 

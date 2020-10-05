@@ -1,7 +1,6 @@
 package me.kaotich00.fwtournament.command.tournament;
 
 import me.kaotich00.fwtournament.challonge.ChallongeIntegrationFactory;
-import me.kaotich00.fwtournament.challonge.objects.ChallongeTournament;
 import me.kaotich00.fwtournament.command.api.AdminCommand;
 import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.tournament.Tournament;
@@ -11,7 +10,6 @@ import org.bukkit.entity.Player;
 import org.json.simple.parser.ParseException;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 public class StartCommand extends AdminCommand {
 
@@ -19,11 +17,9 @@ public class StartCommand extends AdminCommand {
     public void onCommand(CommandSender sender, String[] args) {
         super.onCommand(sender, args);
 
-        String tournamentName = args[1];
-
         SimpleTournamentService simpleTournamentService = SimpleTournamentService.getInstance();
-        if(simpleTournamentService.getTournament(tournamentName).isPresent()) {
-            Tournament tournament = simpleTournamentService.getTournament(tournamentName).get();
+        if(simpleTournamentService.getTournament().isPresent()) {
+            Tournament tournament = simpleTournamentService.getTournament().get();
 
             if(tournament.isStarted()) {
                 sender.sendMessage(ChatFormatter.formatErrorMessage("Tournament already started!"));
@@ -31,32 +27,33 @@ public class StartCommand extends AdminCommand {
             }
 
             if(tournament.getChallongeTournament() != null) {
-                try {
-                    sender.sendMessage(ChatFormatter.formatSuccessMessage("Starting tournament..."));
-                    CompletableFuture<Void> completableFuture = CompletableFuture.runAsync(() -> {
+                sender.sendMessage(ChatFormatter.formatSuccessMessage("Starting tournament..."));
+                CompletableFuture.supplyAsync(() -> {
+                    try {
+                        ChallongeIntegrationFactory.startTournament((Player) sender, tournament);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                    return true;
+                }).thenAccept(startingResult -> {
+                    sender.sendMessage(ChatFormatter.formatSuccessMessage("Tournament started!"));
+                    tournament.setStarted(true);
+
+                    sender.sendMessage(ChatFormatter.formatSuccessMessage("Collecting current brackets..."));
+                    CompletableFuture.supplyAsync(() -> {
                         try {
-                            ChallongeIntegrationFactory.startTournament((Player) sender, tournament);
-                            sender.sendMessage(ChatFormatter.formatSuccessMessage("Tournament started!"));
-
-                            tournament.setStarted(true);
-
-                            sender.sendMessage(ChatFormatter.formatSuccessMessage("Collecting current brackets..."));
                             ChallongeIntegrationFactory.getTournamentBrackets((Player) sender, tournament);
-                            sender.sendMessage(ChatFormatter.formatSuccessMessage("Brackets collected!"));
-
-                            SimpleTournamentService.getInstance().checkForNewMatchmakings();
                         } catch (ParseException e) {
                             e.printStackTrace();
                         }
+                        return true;
+                    }).thenAccept(bracketResult -> {
+                        sender.sendMessage(ChatFormatter.formatSuccessMessage("Brackets collected!"));
+                        SimpleTournamentService.getInstance().checkForNewMatchmakings();
                     });
-                    completableFuture.get();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                }
+                });
             } else {
-                sender.sendMessage(ChatFormatter.formatErrorMessage("The tournament must be generated before starting it, with the command /torneo generate <name>"));
+                sender.sendMessage(ChatFormatter.formatErrorMessage("The tournament must be generated before starting it, with the command /torneo generate"));
             }
         } else {
             sender.sendMessage(ChatFormatter.formatErrorMessage("The tournament you specified doesn't exist"));
@@ -70,7 +67,7 @@ public class StartCommand extends AdminCommand {
 
     @Override
     public String getUsage() {
-        return "/torneo generate <name>";
+        return "/torneo start";
     }
 
     @Override
@@ -80,7 +77,7 @@ public class StartCommand extends AdminCommand {
 
     @Override
     public Integer getRequiredArgs() {
-        return 2;
+        return 1;
     }
 
 }

@@ -10,13 +10,11 @@ import me.kaotich00.fwtournament.tournament.Tournament;
 import me.kaotich00.fwtournament.utils.SerializationUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.sql.*;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -45,8 +43,6 @@ public class SQLiteConnectionService {
         try (Connection conn = DriverManager.getConnection(url)) {
             if (conn != null) {
                 DatabaseMetaData meta = conn.getMetaData();
-                System.out.println("The driver name is " + meta.getDriverName());
-                System.out.println("A new database has been created.");
             }
 
         } catch (SQLException e) {
@@ -178,7 +174,7 @@ public class SQLiteConnectionService {
                 Boolean tournamentIsGenerated = rs.getInt("tournament_is_generated") == 1 ? true : false;
                 SimpleTournamentService simpleTournamentService = SimpleTournamentService.getInstance();
                 simpleTournamentService.newTournament(tournamentName);
-                Tournament tournament = simpleTournamentService.getTournament(tournamentName).get();
+                Tournament tournament = simpleTournamentService.getTournament().get();
                 tournament.setStarted(tournamentIsStarted);
                 tournament.setGenerated(tournamentIsGenerated);
 
@@ -209,7 +205,7 @@ public class SQLiteConnectionService {
 
                 SimpleTournamentService simpleTournamentService = SimpleTournamentService.getInstance();
                 simpleTournamentService.newTournament(tournamentName);
-                Optional<Tournament> opTournament = simpleTournamentService.getTournament(tournamentName);
+                Optional<Tournament> opTournament = simpleTournamentService.getTournament();
                 if(opTournament.isPresent()) {
                     Tournament tournament = opTournament.get();
                     ItemStack itemStack = SerializationUtil.fromBase64(itemStackText);
@@ -237,7 +233,7 @@ public class SQLiteConnectionService {
 
                 SimpleTournamentService simpleTournamentService = SimpleTournamentService.getInstance();
                 simpleTournamentService.newTournament(tournamentName);
-                Optional<Tournament> opTournament = simpleTournamentService.getTournament(tournamentName);
+                Optional<Tournament> opTournament = simpleTournamentService.getTournament();
                 if(opTournament.isPresent()) {
                     Tournament tournament = opTournament.get();
                     tournament.addPlayer(UUID.fromString(playerUUID), playerNickname);
@@ -267,7 +263,7 @@ public class SQLiteConnectionService {
 
                 SimpleTournamentService simpleTournamentService = SimpleTournamentService.getInstance();
                 simpleTournamentService.newTournament(tournamentName);
-                Optional<Tournament> opTournament = simpleTournamentService.getTournament(tournamentName);
+                Optional<Tournament> opTournament = simpleTournamentService.getTournament();
                 if(opTournament.isPresent()) {
                     Tournament tournament = opTournament.get();
 
@@ -325,59 +321,44 @@ public class SQLiteConnectionService {
         }
     }
 
-    public void saveTournamentsToDatabase(Fwtournament plugin, String dbName) {
-        HashMap<String, Tournament> tournamentsList = SimpleTournamentService.getInstance().getTournamentList();
-        for (Map.Entry<String, Tournament> entry : tournamentsList.entrySet()) {
-            Tournament tournament = entry.getValue();
+    public void saveTournamentToDatabase(Fwtournament plugin, String dbName) {
+        Optional<Tournament> optTournament = SimpleTournamentService.getInstance().getTournament();
+        if (optTournament.isPresent()) {
+            Tournament tournament = optTournament.get();
             ChallongeTournament challongeTournament = tournament.getChallongeTournament();
 
-            String insertChallongeTournamentSql = "INSERT OR IGNORE INTO fw_challonge_tournament(id,name,description,challonge_link) VALUES(?,?,?,?)";
-            try (Connection conn = this.connect(plugin, dbName);
-                 PreparedStatement pstmt = conn.prepareStatement(insertChallongeTournamentSql)) {
+            try (Connection conn = this.connect(plugin, dbName)) {
+
+                String insertChallongeTournamentSql = "INSERT OR IGNORE INTO fw_challonge_tournament(id,name,description,challonge_link) VALUES(?,?,?,?)";
+                PreparedStatement pstmt = conn.prepareStatement(insertChallongeTournamentSql);
                 pstmt.setInt(1, challongeTournament.getId().intValue());
                 pstmt.setString(2, challongeTournament.getName());
                 pstmt.setString(3, challongeTournament.getDescription());
                 pstmt.setString(4, challongeTournament.getChallongeLink());
                 pstmt.executeUpdate();
-            } catch (SQLException e) {
-                System.out.println(e.getMessage());
-            }
 
-            String insertTournamentSql = "INSERT OR IGNORE INTO fw_tournament(name,id_challonge,is_started,is_generated) VALUES(?,?,?,?)";
-            try (Connection conn = this.connect(plugin, dbName);
-                 PreparedStatement pstmt = conn.prepareStatement(insertTournamentSql)) {
+                String insertTournamentSql = "INSERT OR IGNORE INTO fw_tournament(name,id_challonge,is_started,is_generated) VALUES(?,?,?,?)";
+                pstmt = conn.prepareStatement(insertTournamentSql);
                 pstmt.setString(1, tournament.getName());
                 pstmt.setInt(2, tournament.getChallongeTournament().getId().intValue());
                 pstmt.setInt(3, tournament.isStarted() ? 1 : 0);
                 pstmt.setInt(4, tournament.isGenerated() ? 1 : 0);
                 pstmt.executeUpdate();
-            } catch (SQLException e) {
-                System.out.println(e.getMessage());
-            }
 
-            String deleteKitSql = "DELETE FROM fw_kit";
-            try (Connection conn = this.connect(plugin, dbName);
-                 PreparedStatement pstmt = conn.prepareStatement(deleteKitSql)) {
+                String deleteKitSql = "DELETE FROM fw_kit";
+                pstmt = conn.prepareStatement(deleteKitSql);
                 pstmt.executeUpdate();
-            } catch (SQLException e) {
-                System.out.println(e.getMessage());
-            }
 
-            String insertKitsSql = "INSERT INTO fw_kit(itemstack,tournament_name) VALUES(?,?)";
-            try (Connection conn = this.connect(plugin, dbName);
-                 PreparedStatement pstmt = conn.prepareStatement(insertKitsSql)) {
-                for(ItemStack itemStack: tournament.getKit().getItemsList()) {
+                String insertKitsSql = "INSERT INTO fw_kit(itemstack,tournament_name) VALUES(?,?)";
+                pstmt = conn.prepareStatement(insertKitsSql);
+                for (ItemStack itemStack : tournament.getKit().getItemsList()) {
                     pstmt.setString(1, SerializationUtil.toBase64(itemStack));
                     pstmt.setString(2, tournament.getName());
                     pstmt.executeUpdate();
                 }
-            } catch (SQLException e) {
-                System.out.println(e.getMessage());
-            }
 
-            String insertPlayersSql = "INSERT OR IGNORE INTO fw_players(uuid,nickname,tournament_name) VALUES(?,?,?)";
-            try (Connection conn = this.connect(plugin, dbName);
-                 PreparedStatement pstmt = conn.prepareStatement(insertPlayersSql)) {
+                String insertPlayersSql = "INSERT OR IGNORE INTO fw_players(uuid,nickname,tournament_name) VALUES(?,?,?)";
+                pstmt = conn.prepareStatement(insertPlayersSql);
                 for (Map.Entry<UUID, String> player : tournament.getPlayersList().entrySet()) {
                     String playerUUID = player.getKey().toString();
                     String playerName = player.getValue();
@@ -386,22 +367,14 @@ public class SQLiteConnectionService {
                     pstmt.setString(3, tournament.getName());
                     pstmt.executeUpdate();
                 }
-            } catch (SQLException e) {
-                System.out.println(e.getMessage());
-            }
 
-            String deleteBracketSql = "DELETE FROM fw_brackets";
-            try (Connection conn = this.connect(plugin, dbName);
-                 PreparedStatement pstmt = conn.prepareStatement(deleteBracketSql)) {
+                String deleteBracketSql = "DELETE FROM fw_brackets";
+                pstmt = conn.prepareStatement(deleteBracketSql);
                 pstmt.executeUpdate();
-            } catch (SQLException e) {
-                System.out.println(e.getMessage());
-            }
 
-            String insertBracketSql = "INSERT OR IGNORE INTO fw_brackets(player_one_uuid,player_two_uuid,player_one_name,player_two_name,tournament_name,player_winner_uuid,challonge_match_id, first_player_challonge_id, second_player_challonge_id) VALUES (?,?,?,?,?,?,?,?,?)";
-            try (Connection conn = this.connect(plugin, dbName);
-                 PreparedStatement pstmt = conn.prepareStatement(insertBracketSql)) {
-                for (Bracket bracket: tournament.getBracketsList()) {
+                String insertBracketSql = "INSERT OR IGNORE INTO fw_brackets(player_one_uuid,player_two_uuid,player_one_name,player_two_name,tournament_name,player_winner_uuid,challonge_match_id, first_player_challonge_id, second_player_challonge_id) VALUES (?,?,?,?,?,?,?,?,?)";
+                pstmt = conn.prepareStatement(insertBracketSql);
+                for (Bracket bracket : tournament.getBracketsList()) {
                     pstmt.setString(1, bracket.getFirstPlayerUUID().toString());
                     pstmt.setString(2, bracket.getSecondPlayerUUID().toString());
                     pstmt.setString(3, bracket.getFirstPlayerName());
@@ -414,18 +387,14 @@ public class SQLiteConnectionService {
 
                     pstmt.executeUpdate();
                 }
-            } catch (SQLException e) {
-                System.out.println(e.getMessage());
-            }
 
-            String insertArenaSql = "INSERT OR IGNORE INTO fw_arena(name, " +
-                                    "player_one_spawn_x, player_one_spawn_y, player_one_spawn_z, player_one_spawn_world," +
-                                    "player_two_spawn_x, player_two_spawn_y, player_two_spawn_z, player_two_spawn_world," +
-                                    "player_one_battle_x, player_one_battle_y, player_one_battle_z, player_one_battle_world," +
-                                    "player_two_battle_x, player_two_battle_y, player_two_battle_z, player_two_battle_world) " +
-                                    "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-            try (Connection conn = this.connect(plugin, dbName);
-                 PreparedStatement pstmt = conn.prepareStatement(insertArenaSql)) {
+                String insertArenaSql = "INSERT OR IGNORE INTO fw_arena(name, " +
+                        "player_one_spawn_x, player_one_spawn_y, player_one_spawn_z, player_one_spawn_world," +
+                        "player_two_spawn_x, player_two_spawn_y, player_two_spawn_z, player_two_spawn_world," +
+                        "player_one_battle_x, player_one_battle_y, player_one_battle_z, player_one_battle_world," +
+                        "player_two_battle_x, player_two_battle_y, player_two_battle_z, player_two_battle_world) " +
+                        "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                pstmt = conn.prepareStatement(insertArenaSql);
                 for (Map.Entry<String, Arena> arenaEntry : SimpleArenaService.getInstance().getArenas().entrySet()) {
                     String arenaName = arenaEntry.getKey();
                     Arena arena = arenaEntry.getValue();
@@ -474,6 +443,7 @@ public class SQLiteConnectionService {
 
                     pstmt.executeUpdate();
                 }
+
             } catch (SQLException e) {
                 System.out.println(e.getMessage());
             }

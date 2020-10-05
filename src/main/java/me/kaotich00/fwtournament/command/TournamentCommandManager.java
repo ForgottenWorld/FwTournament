@@ -1,13 +1,11 @@
 package me.kaotich00.fwtournament.command;
 
 import me.kaotich00.fwtournament.Fwtournament;
+import me.kaotich00.fwtournament.api.command.Command;
 import me.kaotich00.fwtournament.command.tournament.*;
-import me.kaotich00.fwtournament.services.SimpleArenaService;
-import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
 import me.kaotich00.fwtournament.utils.CommandTypes;
 import me.kaotich00.fwtournament.utils.NameUtil;
-import me.kaotich00.fwtournament.api.command.Command;
 import org.bukkit.command.CommandException;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -80,10 +78,6 @@ public class TournamentCommandManager implements TabExecutor {
 
         if(args.length == 2) {
             argsIndex = args[1];
-
-            for(String tournamentName: SimpleTournamentService.getInstance().getTournamentList().keySet()) {
-                suggestions.add(tournamentName);
-            }
         }
 
         return NameUtil.filterByStart(suggestions, argsIndex);

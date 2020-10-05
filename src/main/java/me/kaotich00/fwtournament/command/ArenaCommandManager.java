@@ -4,7 +4,6 @@ import me.kaotich00.fwtournament.Fwtournament;
 import me.kaotich00.fwtournament.api.command.Command;
 import me.kaotich00.fwtournament.command.arena.NewCommand;
 import me.kaotich00.fwtournament.services.SimpleArenaService;
-import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
 import me.kaotich00.fwtournament.utils.CommandTypes;
 import me.kaotich00.fwtournament.utils.NameUtil;

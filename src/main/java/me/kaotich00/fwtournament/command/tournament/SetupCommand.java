@@ -15,15 +15,17 @@ public class SetupCommand extends AdminCommand {
     public void onCommand(CommandSender sender, String[] args) {
         super.onCommand(sender, args);
 
-        String tournamentName = args[1];
-
         SimpleTournamentService simpleTournamentService = SimpleTournamentService.getInstance();
-        if(simpleTournamentService.getTournament(tournamentName).isPresent()) {
-            Tournament tournament = simpleTournamentService.getTournament(tournamentName).get();
+        if(simpleTournamentService.getTournament().isPresent()) {
+            Tournament tournament = simpleTournamentService.getTournament().get();
+
+            if(tournament.isGenerated()) {
+                sender.sendMessage(ChatFormatter.formatErrorMessage("The tournament is already generated, can't modify it"));
+                return;
+            }
+
             TournamentSetupPrompt creation = new TournamentSetupPrompt(Fwtournament.getPlugin(Fwtournament.class), tournament);
             creation.startConversationForPlayer((Player)sender);
-
-            SimpleTournamentService.getInstance().addModifyingPlayer(((Player) sender).getUniqueId(), tournament);
         } else {
             sender.sendMessage(ChatFormatter.formatErrorMessage("The tournament you specified doesn't exist"));
         }
@@ -36,7 +38,7 @@ public class SetupCommand extends AdminCommand {
 
     @Override
     public String getUsage() {
-        return "/torneo setup <name>";
+        return "/torneo setup";
     }
 
     @Override
@@ -46,7 +48,7 @@ public class SetupCommand extends AdminCommand {
 
     @Override
     public Integer getRequiredArgs() {
-        return 2;
+        return 1;
     }
 
 }

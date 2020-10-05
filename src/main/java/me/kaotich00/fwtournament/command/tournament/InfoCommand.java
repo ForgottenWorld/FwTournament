@@ -16,10 +16,8 @@ public class InfoCommand extends AdminCommand {
     public void onCommand(CommandSender sender, String[] args) {
         super.onCommand(sender, args);
 
-        String tournamentName = args[1];
-
         SimpleTournamentService simpleTournamentService = SimpleTournamentService.getInstance();
-        Optional<Tournament> optTournament = simpleTournamentService.getTournament(tournamentName);
+        Optional<Tournament> optTournament = simpleTournamentService.getTournament();
 
         if(optTournament.isPresent()) {
             Tournament tournament = optTournament.get();
@@ -64,7 +62,7 @@ public class InfoCommand extends AdminCommand {
 
     @Override
     public String getUsage() {
-        return "/torneo new <name>";
+        return "/torneo info";
     }
 
     @Override
@@ -74,7 +72,7 @@ public class InfoCommand extends AdminCommand {
 
     @Override
     public Integer getRequiredArgs() {
-        return 2;
+        return 1;
     }
 
 }

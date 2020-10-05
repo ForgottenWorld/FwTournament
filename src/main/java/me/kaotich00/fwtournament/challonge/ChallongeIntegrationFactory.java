@@ -5,7 +5,6 @@ import com.google.common.collect.Multimap;
 import me.kaotich00.fwtournament.bracket.Bracket;
 import me.kaotich00.fwtournament.challonge.objects.ChallongeTournament;
 import me.kaotich00.fwtournament.http.HTTPClient;
-import me.kaotich00.fwtournament.services.SimpleArenaService;
 import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.tournament.Tournament;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
@@ -50,7 +49,7 @@ public class ChallongeIntegrationFactory {
         }
 
         if( responseData == null ) {
-            Optional<Tournament> optTournament = SimpleTournamentService.getInstance().getTournament(name);
+            Optional<Tournament> optTournament = SimpleTournamentService.getInstance().getTournament();
             if(optTournament.isPresent()) {
                 return optTournament.get().getChallongeTournament();
             }
@@ -78,15 +77,7 @@ public class ChallongeIntegrationFactory {
 
         String URI = HTTPUtils.CHALLONGE_ADD_PARTICIPANTS_ENDPOINT.replace("{tournament}",challongeTournament.getId().toString());
         String requestMethod = "POST";
-        String response = HTTPClient.fetchHttpRequest(URI, requestMethod,postDataParams, sender);
-
-        JSONParser parser = new JSONParser();
-        JSONArray responseData = null;
-        try {
-            responseData = (JSONArray) parser.parse(response);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
+        HTTPClient.fetchHttpRequest(URI, requestMethod,postDataParams, sender);
     }
 
     public static void startTournament(Player sender, Tournament tournament) throws ParseException {
@@ -98,14 +89,7 @@ public class ChallongeIntegrationFactory {
         String URI = HTTPUtils.CHALLONGE_START_TOURNAMENT_ENDPOINT.replace("{tournament}",challongeTournament.getId().toString());
         String requestMethod = "POST";
 
-        String response = HTTPClient.fetchHttpRequest(URI, requestMethod, postDataParams, sender);
-        JSONParser parser = new JSONParser();
-        JSONObject responseData = null;
-        try {
-            responseData = (JSONObject) parser.parse(response);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
+        HTTPClient.fetchHttpRequest(URI, requestMethod, postDataParams, sender);
     }
 
     public static boolean getTournamentBrackets(Player sender, Tournament tournament) throws ParseException {
@@ -129,47 +113,46 @@ public class ChallongeIntegrationFactory {
             // the tournament has ended
             // Therefore the winner is announced
             if(responseData.size() == 0) {
-                CompletableFuture<Void> completableFuture = CompletableFuture.runAsync(() -> {
-                    // Close the tournament
+                CompletableFuture.supplyAsync(() -> {
                     try {
                         endTournament(sender, tournament);
-                        SimpleTournamentService.getInstance().endTournament(tournament);
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
-
+                    return true;
+                }).thenAccept(result -> {
+                    SimpleTournamentService.getInstance().endTournament(tournament);
                     Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The tournament has ended!"));
                 });
-                completableFuture.get();
+
                 return true;
+            } else {
+                for(int i = 0; i < responseData.size(); i++) {
+                    JSONObject match = (JSONObject) responseData.get(i);
+                    match = (JSONObject) match.get("match");
+
+                    String matchId = match.get("id").toString();
+                    String playerOneId = match.get("player1_id").toString();
+                    String playerTwoId = match.get("player2_id").toString();
+
+                    String playerOneName = getParticipantName(sender, tournament, playerOneId);
+                    String playerTwoName = getParticipantName(sender, tournament, playerTwoId);
+
+                    Mojang api = new Mojang().connect();
+
+                    UUID playerOneUUID = UUID.fromString(UUIDUtils.parseUUID(api.getUUIDOfUsername(playerOneName)));
+                    UUID playerTwoUUID = UUID.fromString(UUIDUtils.parseUUID(api.getUUIDOfUsername(playerTwoName)));
+
+                    SimpleTournamentService.getInstance().pushNewBracket(matchId, tournament, playerOneName, playerOneUUID, playerTwoName, playerTwoUUID, playerOneId, playerTwoId);
+                }
+
+                SimpleTournamentService.getInstance().checkForNewMatchmakings();
             }
-
-            for(int i = 0; i < responseData.size(); i++) {
-                JSONObject match = (JSONObject) responseData.get(i);
-                match = (JSONObject) match.get("match");
-
-                String matchId = match.get("id").toString();
-                String playerOneId = match.get("player1_id").toString();
-                String playerTwoId = match.get("player2_id").toString();
-
-                String playerOneName = getParticipantName(sender, tournament, playerOneId);
-                String playerTwoName = getParticipantName(sender, tournament, playerTwoId);
-
-                Mojang api = new Mojang().connect();
-
-                UUID playerOneUUID = UUID.fromString(UUIDUtils.parseUUID(api.getUUIDOfUsername(playerOneName)));
-                UUID playerTwoUUID = UUID.fromString(UUIDUtils.parseUUID(api.getUUIDOfUsername(playerTwoName)));
-
-                SimpleTournamentService.getInstance().pushNewBracket(matchId, tournament, playerOneName, playerOneUUID, playerTwoName, playerTwoUUID, playerOneId, playerTwoId);
-            }
-
-            SimpleTournamentService.getInstance().checkForNewMatchmakings();
         } catch(Exception e) {
             e.printStackTrace();
         }
 
         return false;
-
     }
 
     public static String getParticipantName(Player sender, Tournament tournament, String playerId) throws ParseException {

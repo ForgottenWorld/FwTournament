@@ -17,24 +17,16 @@ import org.json.simple.parser.ParseException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 public class SimpleTournamentService {
 
     private static SimpleTournamentService simpleTournamentService;
-    private HashMap<String, Tournament> tournamentList;
-    private HashMap<UUID, Tournament> currentModifyingPlayer;
-    private Set<Bracket> activeBrackets;
-    private List<UUID> matchmakingQueue;
+    private Tournament currentTournament;
 
     private SimpleTournamentService() {
         if(simpleTournamentService != null) {
             throw new RuntimeException("Use getInstance() method to get the single instance of this class.");
         }
-        this.tournamentList = new HashMap<>();
-        this.currentModifyingPlayer = new HashMap<>();
-        this.activeBrackets = new HashSet<>();
-        this.matchmakingQueue = new ArrayList<>();
     }
 
     public static SimpleTournamentService getInstance() {
@@ -45,54 +37,35 @@ public class SimpleTournamentService {
     }
 
     public boolean newTournament(String name) {
-        if(tournamentList.containsKey(name)) {
+        if(currentTournament != null) {
             return false;
         }
 
-        Tournament tournament = new Tournament(name);
-        tournamentList.put(name, tournament);
+        this.currentTournament = new Tournament(name);
 
         return true;
     }
 
-    public Optional<Tournament> getTournament(String name) {
-        return tournamentList.containsKey(name) ? Optional.of(tournamentList.get(name)) : Optional.empty();
+    public Optional<Tournament> getTournament() {
+        return Optional.ofNullable(this.currentTournament);
     }
 
-    public boolean addPlayerToTournament(String tournamentName, UUID playerUUID, String playerName) {
-        Tournament tournament = tournamentList.get(tournamentName);
-        if(tournament.getPlayersList().containsKey(playerName)) {
+    public boolean addPlayerToTournament(UUID playerUUID, String playerName) {
+        if(this.currentTournament.getPlayersList().containsKey(playerUUID)) {
             return false;
         }
 
-        tournament.addPlayer(playerUUID, playerName);
+        this.currentTournament.addPlayer(playerUUID, playerName);
         return true;
     }
 
-    public boolean removePlayerFromTournament(String tournamentName, String playerName) {
-        Tournament tournament = tournamentList.get(tournamentName);
-        if(!tournament.getPlayersList().containsKey(playerName)) {
+    public boolean removePlayerFromTournament(UUID playerUUID) {
+        if(!this.currentTournament.getPlayersList().containsKey(playerUUID)) {
             return false;
         }
 
-        tournament.removePlayer(playerName);
+        this.currentTournament.removePlayer(playerUUID);
         return true;
-    }
-
-    public void addModifyingPlayer(UUID player, Tournament tournament) {
-        this.currentModifyingPlayer.put(player, tournament);
-    }
-
-    public void removeModifyingPlayer(UUID player) {
-        this.currentModifyingPlayer.remove(player);
-    }
-
-    public Tournament getTournamentByModifyingPlayer(UUID player) {
-        return this.currentModifyingPlayer.get(player);
-    }
-
-    public HashMap<String, Tournament> getTournamentList() {
-        return this.tournamentList;
     }
 
     public Bracket pushNewBracket(String challongeMatchId, Tournament tournament, String playerOne, UUID playerOneUUID, String playerTwo, UUID playerTwoUUID, String firstPlayerChallongeId, String secondPlayerChallongeId) {
@@ -101,93 +74,50 @@ public class SimpleTournamentService {
         return bracket;
     }
 
-    public List<Tournament> getStartedTournaments() {
-        List<Tournament> availableTournaments = new ArrayList<>();
-        for(Map.Entry<String,Tournament> entry : this.tournamentList.entrySet()) {
-            Tournament tournament = entry.getValue();
-            if(tournament.isStarted()) {
-                availableTournaments.add(tournament);
-            }
-        }
-        return availableTournaments;
-    }
-
-    public void startBracket(Bracket bracket) {
-        this.activeBrackets.add(bracket);
-    }
-
-    public void stopBracket(Bracket bracket) { this.activeBrackets.remove(bracket); }
-
-    public Set<Bracket> getActiveBrackets() {
-        return this.activeBrackets;
-    }
-
-    public boolean isInMatchmaking(UUID player) {
-        return this.matchmakingQueue.contains(player);
-    }
-
-    public void addToMatchmaking(UUID player) {
-        this.matchmakingQueue.add(player);
-    }
-
-    public void removeFromMatchmaking(UUID player) {
-        this.matchmakingQueue.remove(player);
-    }
-
     public void checkForNewMatchmakings() {
-        HashMap<String, Tournament> tournamentsList = SimpleTournamentService.getInstance().getTournamentList();
-        for(Map.Entry<String,Tournament> entry : tournamentsList.entrySet()) {
-            Tournament tournament = entry.getValue();
-            for(Bracket bracket : tournament.getBracketsList()) {
+        Tournament tournament = currentTournament;
+        
+        if(tournament == null) {
+            return;
+        }
+        
+        for(Bracket bracket : tournament.getBracketsList()) {
+            if(bracket.getWinner() != null) {
+                continue;
+            }
 
-                if(bracket.getWinner() != null) {
-                    continue;
-                }
+            UUID firstPlayerUUID = bracket.getFirstPlayerUUID();
+            UUID secondPlayerUUID = bracket.getSecondPlayerUUID();
 
-                UUID firstPlayerUUID = bracket.getFirstPlayerUUID();
-                UUID secondPlayerUUID = bracket.getSecondPlayerUUID();
+            if(Bukkit.getPlayer(firstPlayerUUID) != null) {
+                checkMatchmakingStatus(Objects.requireNonNull(Bukkit.getPlayer(firstPlayerUUID)));
+                continue;
+            }
 
-                if(Bukkit.getPlayer(firstPlayerUUID) != null) {
-                    checkMatchmakingStatus(Bukkit.getPlayer(firstPlayerUUID));
-                    continue;
-                }
-
-                if(Bukkit.getPlayer(secondPlayerUUID) != null) {
-                    checkMatchmakingStatus(Bukkit.getPlayer(secondPlayerUUID));
-                    continue;
-                }
+            if(Bukkit.getPlayer(secondPlayerUUID) != null) {
+                checkMatchmakingStatus(Objects.requireNonNull(Bukkit.getPlayer(secondPlayerUUID)));
             }
         }
     }
 
     public void checkMatchmakingStatus(Player player) {
-        // Check if there is any started tournament
-        List<Tournament> availableTournaments = SimpleTournamentService.getInstance().getStartedTournaments();
 
-        if(availableTournaments.isEmpty()) {
-            player.sendMessage(ChatFormatter.formatSuccessMessage("Hi, there are no tournament available at the moment. Gamemode set to spectator mode."));
-            player.setGameMode(GameMode.SPECTATOR);
+        Tournament tournament = currentTournament;
+
+        if(tournament == null) {
             return;
         }
 
-        // Check if the player is in started tournament
-        Tournament playerTournament = null;
-        for(Tournament tournament: availableTournaments) {
-            if(tournament.getPlayersList().containsKey(player.getUniqueId())) {
-                playerTournament = tournament;
-            }
-        }
-
         // If it is not, put player in spectator mode
-        if(playerTournament == null) {
-            player.sendMessage(ChatFormatter.formatSuccessMessage("Hi, it seems like you don't belong to any tournament. Gamemode set to spectator mode."));
+        if(!tournament.getPlayersList().containsKey(player.getUniqueId())) {
+            player.sendMessage(ChatFormatter.formatSuccessMessage("Hi, you are not part of the tournament. Setting gamemode to spectator."));
             player.setGameMode(GameMode.SPECTATOR);
             return;
         }
 
         // Check if player is in any open match
         Bracket playerBracket = null;
-        for(Bracket bracket: playerTournament.getRemainingBrackets()) {
+        for(Bracket bracket: tournament.getRemainingBrackets()) {
             if(bracket.getFirstPlayerUUID().equals(player.getUniqueId()) || bracket.getSecondPlayerUUID().equals(player.getUniqueId())) {
                 playerBracket = bracket;
             }
@@ -201,7 +131,7 @@ public class SimpleTournamentService {
         }
 
         // if player is in a running match, skip
-        if(SimpleTournamentService.getInstance().getActiveBrackets().contains(playerBracket)) {
+        if(tournament.getActiveBrackets().contains(playerBracket)) {
             return;
         }
 
@@ -231,16 +161,16 @@ public class SimpleTournamentService {
 
         Bracket finalPlayerBracket = playerBracket;
         Arena finalFreeArena = freeArena;
-        Tournament finalPlayerTournament = playerTournament;
         Bukkit.getScheduler().scheduleSyncDelayedTask(Fwtournament.getPlugin(Fwtournament.class), () -> {
 
             Player firstPlayer = Bukkit.getPlayer(finalPlayerBracket.getFirstPlayerUUID());
             Player secondPlayer = Bukkit.getPlayer(finalPlayerBracket.getSecondPlayerUUID());
 
+            assert firstPlayer != null && secondPlayer != null;
             firstPlayer.teleport(finalFreeArena.getPlayerOneSpawn());
             secondPlayer.teleport(finalFreeArena.getPlayerTwoSpawn());
 
-            Kit playersKit = finalPlayerTournament.getKit();
+            Kit playersKit = tournament.getKit();
 
             firstPlayer.getInventory().clear();
             secondPlayer.getInventory().clear();
@@ -258,23 +188,17 @@ public class SimpleTournamentService {
             SimpleArenaService.getInstance().addToOccupiedArenas(finalPlayerBracket, finalFreeArena);
 
             // Add bracket as active
-            SimpleTournamentService.getInstance().startBracket(finalPlayerBracket);
+            tournament.startBracket(finalPlayerBracket);
 
             // Run battle timer
-            finalPlayerTournament.startBattleTimer(finalFreeArena, finalPlayerBracket);
+            tournament.startBattleTimer(finalFreeArena, finalPlayerBracket);
 
         }, 200L);
     }
 
     public void checkTournamentDeath(Player player) throws ExecutionException, InterruptedException {
 
-        for(Tournament tournament : SimpleTournamentService.getInstance().getStartedTournaments()) {
-            for(Bracket bracket: tournament.getBracketsList()) {
-                SimpleTournamentService.getInstance().startBracket(bracket);
-            }
-        }
-
-        Set<Bracket> activeBrackets = SimpleTournamentService.getInstance().getActiveBrackets();
+        Set<Bracket> activeBrackets = currentTournament.getActiveBrackets();
 
         if(activeBrackets.isEmpty()) {
             return;
@@ -291,47 +215,51 @@ public class SimpleTournamentService {
             }
 
             if(bracket.getWinner() != null) {
-                //Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The winner of the match is " + Bukkit.getServer().getPlayer(bracket.getWinner()).getName()));
+                Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The winner of the match is " + Objects.requireNonNull(Bukkit.getServer().getPlayer(bracket.getWinner())).getName()));
 
-                Tournament tournament = SimpleTournamentService.getInstance().getTournament(bracket.getTournamentName()).get();
+                Tournament tournament = SimpleTournamentService.getInstance().getTournament().get();
                 Set<Bracket> remainingBrackets = tournament.getRemainingBrackets();
 
-                CompletableFuture<Void> completableFuture = CompletableFuture.runAsync(() -> {
+                CompletableFuture.supplyAsync(() -> {
                     try {
                         ChallongeIntegrationFactory.updateMatchResult(player, tournament, bracket);
-
-                        HashMap<Bracket,Arena> occupiedArenas = SimpleArenaService.getInstance().getOccupiedArenas();
-                        //Arena occupiedArena = occupiedArenas.get(bracket);
-                        //occupiedArena.setOccupied(false);
-
-                        // This means every bracket has a winner.
-                        // Therefore new brackets need to be
-                        // generated
-                        if (remainingBrackets.isEmpty()) {
-                            Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("Tournament round is over"));
-                            boolean isTournamentEnded = ChallongeIntegrationFactory.getTournamentBrackets(null, tournament);
-                            if(isTournamentEnded) {
-                                //Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("Congratulation to the winner of the tournament: " + Bukkit.getServer().getPlayer(bracket.getWinner()).getName()));
-                            }
-                        } else {
-                            checkForNewMatchmakings();
-                        }
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
+                    return true;
+                }).thenAccept(result -> {
+                    HashMap<Bracket,Arena> occupiedArenas = SimpleArenaService.getInstance().getOccupiedArenas();
+                    Arena occupiedArena = occupiedArenas.get(bracket);
+                    occupiedArena.setOccupied(false);
+
+                    // This means every bracket has a winner.
+                    // Therefore new brackets need to be
+                    // generated
+                    if (remainingBrackets.isEmpty()) {
+                        Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("Tournament round is over"));
+                        CompletableFuture.supplyAsync(() -> {
+                            boolean isTournamentEnded = false;
+                            try {
+                                isTournamentEnded = ChallongeIntegrationFactory.getTournamentBrackets(null, tournament);
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
+                            return isTournamentEnded;
+                        }).thenAccept(isTournamentEnded -> {
+                            if(isTournamentEnded) {
+                                Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("Congratulation to the winner of the tournament: " + Objects.requireNonNull(Bukkit.getServer().getPlayer(bracket.getWinner())).getName()));
+                            }
+                        });
+                    } else {
+                        checkForNewMatchmakings();
+                    }
                 });
-                completableFuture.get();
-            } else {
-                continue;
             }
         }
     }
 
     public void endTournament(Tournament tournament) {
-        this.tournamentList.remove(tournament.getName());
-
-        List<Bracket> tournamentBrackets = this.activeBrackets.stream().filter(bracket -> bracket.getTournamentName().equals(tournament.getName())).collect(Collectors.toList());
-        this.activeBrackets.removeAll(tournamentBrackets);
+        currentTournament = null;
 
         SQLiteConnectionService.getInstance().deleteTournament(Fwtournament.getPlugin(Fwtournament.class), "fwtournament", tournament);
     }

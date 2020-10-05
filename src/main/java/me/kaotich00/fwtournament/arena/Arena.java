@@ -64,20 +64,22 @@ public class Arena {
 
     public boolean isOccupied(){ return this.isOccupied; }
 
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Arena arena = (Arena) o;
-        return Objects.equals(playerOneSpawn, arena.playerOneSpawn) &&
-                Objects.equals(playerTwoSpawn, arena.playerTwoSpawn) &&
-                Objects.equals(playerOneBattle, arena.playerOneBattle) &&
-                Objects.equals(playerTwoBattle, arena.playerTwoBattle);
+        return isOccupied == arena.isOccupied &&
+                arenaName.equals(arena.arenaName) &&
+                playerOneSpawn.equals(arena.playerOneSpawn) &&
+                playerTwoSpawn.equals(arena.playerTwoSpawn) &&
+                playerOneBattle.equals(arena.playerOneBattle) &&
+                playerTwoBattle.equals(arena.playerTwoBattle);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(playerOneSpawn, playerTwoSpawn, playerOneBattle, playerTwoBattle);
+        return Objects.hash(arenaName, playerOneSpawn, playerTwoSpawn, playerOneBattle, playerTwoBattle, isOccupied);
     }
-
 }

@@ -12,6 +12,8 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.Optional;
+
 public class KitGuiListener implements Listener {
 
     @EventHandler
@@ -45,23 +47,25 @@ public class KitGuiListener implements Listener {
                 player.closeInventory();
                 break;
             case EMERALD:
-                addItemRewards(player, player.getOpenInventory().getTopInventory());
+                addItemRewards(player.getOpenInventory().getTopInventory());
                 player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 10, 1);
                 player.closeInventory();
                 break;
         }
     }
 
-    private void addItemRewards(Player player, Inventory inventory) {
-        Tournament tournament = SimpleTournamentService.getInstance().getTournamentByModifyingPlayer(player.getUniqueId());
+    private void addItemRewards(Inventory inventory) {
+        Optional<Tournament> optTournament = SimpleTournamentService.getInstance().getTournament();
 
-        tournament.getKit().clearKit();
-        for( int i = 9; i < inventory.getSize(); i++ ) {
-            ItemStack kitItem = inventory.getItem(i);
-            if( kitItem != null ) {
-                tournament.getKit().addItemToKit(kitItem);
+        optTournament.ifPresent(tournament -> {
+            tournament.getKit().clearKit();
+            for( int i = 9; i < inventory.getSize(); i++ ) {
+                ItemStack kitItem = inventory.getItem(i);
+                if( kitItem != null ) {
+                    tournament.getKit().addItemToKit(kitItem);
+                }
             }
-        }
+        });
     }
 
 }

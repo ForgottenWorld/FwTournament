@@ -9,7 +9,8 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.Collection;
+import java.util.Set;
 
 public class HTTPClient {
 

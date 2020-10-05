@@ -6,7 +6,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.json.simple.parser.ParseException;
 
 import java.util.concurrent.ExecutionException;
 
@@ -19,12 +18,12 @@ public class PlayerListener implements Listener {
     }
 
     @EventHandler
-    public void onPlayerDeathListener(PlayerDeathEvent event) throws ParseException, ExecutionException, InterruptedException {
+    public void onPlayerDeathListener(PlayerDeathEvent event) throws ExecutionException, InterruptedException {
         Player player = event.getEntity();
 
-        /*if(!(event.getEntity().getKiller() instanceof Player)) {
+        if(!(event.getEntity().getKiller() instanceof Player)) {
             return;
-        }*/
+        }
 
         SimpleTournamentService.getInstance().checkTournamentDeath(player);
     }

@@ -11,6 +11,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.concurrent.CompletableFuture;
+
 public final class Fwtournament extends JavaPlugin {
 
     public static FileConfiguration defaultConfig;
@@ -28,16 +30,15 @@ public final class Fwtournament extends JavaPlugin {
 
         Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN + "[FwTournament]" + ChatColor.RESET + " Setting up SQLite...");
         setupSQLite();
-
-        Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN + "[FwTournament]" + ChatColor.RESET + " Loading data from SQLite");
-        loadDataFromSQlite();
     }
 
     @Override
     public void onDisable() {
         Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN + "[FwTournament]" + ChatColor.RESET + " Saving data to SQLite");
-        SQLiteConnectionService sqLiteConnectionService = SQLiteConnectionService.getInstance();
-        sqLiteConnectionService.saveTournamentsToDatabase(this, "fwtournament");
+        CompletableFuture.runAsync(() -> {
+            SQLiteConnectionService sqLiteConnectionService = SQLiteConnectionService.getInstance();
+            sqLiteConnectionService.saveTournamentToDatabase(this, "fwtournament");
+        });
     }
 
     private void loadConfiguration() {
@@ -47,9 +48,14 @@ public final class Fwtournament extends JavaPlugin {
     }
 
     private void setupSQLite() {
-        SQLiteConnectionService sqLiteConnectionService = SQLiteConnectionService.getInstance();
-        sqLiteConnectionService.createNewDatabase(this, "fwtournament");
-        sqLiteConnectionService.setupDefaultTables(this, "fwtournament");
+        CompletableFuture.runAsync(() -> {
+            SQLiteConnectionService sqLiteConnectionService = SQLiteConnectionService.getInstance();
+            sqLiteConnectionService.createNewDatabase(this, "fwtournament");
+            sqLiteConnectionService.setupDefaultTables(this, "fwtournament");
+
+            Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN + "[FwTournament]" + ChatColor.RESET + " Loading data from SQLite...");
+            loadDataFromSQlite();
+        });
     }
 
     private void loadDataFromSQlite() {
