@@ -108,7 +108,7 @@ public class ChallongeIntegrationFactory {
         }
     }
 
-    public static void getTournamentBrackets(Player sender, Tournament tournament) throws ParseException {
+    public static boolean getTournamentBrackets(Player sender, Tournament tournament) throws ParseException {
         ChallongeTournament challongeTournament = tournament.getChallongeTournament();
         tournament.clearBrackets();
 
@@ -133,6 +133,7 @@ public class ChallongeIntegrationFactory {
                     // Close the tournament
                     try {
                         endTournament(sender, tournament);
+                        SimpleTournamentService.getInstance().endTournament(tournament);
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
@@ -140,6 +141,7 @@ public class ChallongeIntegrationFactory {
                     Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The tournament has ended!"));
                 });
                 completableFuture.get();
+                return true;
             }
 
             for(int i = 0; i < responseData.size(); i++) {
@@ -165,6 +167,8 @@ public class ChallongeIntegrationFactory {
         } catch(Exception e) {
             e.printStackTrace();
         }
+
+        return false;
 
     }
 

@@ -5,6 +5,7 @@ import me.kaotich00.fwtournament.arena.Arena;
 import me.kaotich00.fwtournament.bracket.Bracket;
 import me.kaotich00.fwtournament.challonge.ChallongeIntegrationFactory;
 import me.kaotich00.fwtournament.kit.Kit;
+import me.kaotich00.fwtournament.storage.sqlite.SQLiteConnectionService;
 import me.kaotich00.fwtournament.tournament.Tournament;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
 import org.bukkit.Bukkit;
@@ -16,6 +17,7 @@ import org.json.simple.parser.ParseException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 public class SimpleTournamentService {
 
@@ -289,7 +291,7 @@ public class SimpleTournamentService {
             }
 
             if(bracket.getWinner() != null) {
-                Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The winner of the match is " + Bukkit.getServer().getPlayer(bracket.getWinner()).getName()));
+                //Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The winner of the match is " + Bukkit.getServer().getPlayer(bracket.getWinner()).getName()));
 
                 Tournament tournament = SimpleTournamentService.getInstance().getTournament(bracket.getTournamentName()).get();
                 Set<Bracket> remainingBrackets = tournament.getRemainingBrackets();
@@ -299,15 +301,18 @@ public class SimpleTournamentService {
                         ChallongeIntegrationFactory.updateMatchResult(player, tournament, bracket);
 
                         HashMap<Bracket,Arena> occupiedArenas = SimpleArenaService.getInstance().getOccupiedArenas();
-                        Arena occupiedArena = occupiedArenas.get(bracket);
-                        occupiedArena.setOccupied(false);
+                        //Arena occupiedArena = occupiedArenas.get(bracket);
+                        //occupiedArena.setOccupied(false);
 
                         // This means every bracket has a winner.
                         // Therefore new brackets need to be
                         // generated
                         if (remainingBrackets.isEmpty()) {
                             Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("Tournament round is over"));
-                            ChallongeIntegrationFactory.getTournamentBrackets(null, tournament);
+                            boolean isTournamentEnded = ChallongeIntegrationFactory.getTournamentBrackets(null, tournament);
+                            if(isTournamentEnded) {
+                                //Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("Congratulation to the winner of the tournament: " + Bukkit.getServer().getPlayer(bracket.getWinner()).getName()));
+                            }
                         } else {
                             checkForNewMatchmakings();
                         }
@@ -320,6 +325,15 @@ public class SimpleTournamentService {
                 continue;
             }
         }
+    }
+
+    public void endTournament(Tournament tournament) {
+        this.tournamentList.remove(tournament.getName());
+
+        List<Bracket> tournamentBrackets = this.activeBrackets.stream().filter(bracket -> bracket.getTournamentName().equals(tournament.getName())).collect(Collectors.toList());
+        this.activeBrackets.removeAll(tournamentBrackets);
+
+        SQLiteConnectionService.getInstance().deleteTournament(Fwtournament.getPlugin(Fwtournament.class), "fwtournament", tournament);
     }
 
 }
