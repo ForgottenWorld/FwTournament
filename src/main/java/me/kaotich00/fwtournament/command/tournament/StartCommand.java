@@ -39,18 +39,7 @@ public class StartCommand extends AdminCommand {
                     sender.sendMessage(ChatFormatter.formatSuccessMessage("Tournament started!"));
                     tournament.setStarted(true);
 
-                    sender.sendMessage(ChatFormatter.formatSuccessMessage("Collecting current brackets..."));
-                    CompletableFuture.supplyAsync(() -> {
-                        try {
-                            ChallongeIntegrationFactory.getTournamentBrackets((Player) sender, tournament);
-                        } catch (ParseException e) {
-                            e.printStackTrace();
-                        }
-                        return true;
-                    }).thenAccept(bracketResult -> {
-                        sender.sendMessage(ChatFormatter.formatSuccessMessage("Brackets collected!"));
-                        SimpleTournamentService.getInstance().checkForNewMatchmakings();
-                    });
+                    SimpleTournamentService.getInstance().refreshTournamentBrackets();
                 });
             } else {
                 sender.sendMessage(ChatFormatter.formatErrorMessage("The tournament must be generated before starting it, with the command /torneo generate"));

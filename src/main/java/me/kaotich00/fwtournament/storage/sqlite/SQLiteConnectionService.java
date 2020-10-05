@@ -54,7 +54,7 @@ public class SQLiteConnectionService {
         // SQLite connection string
         String url = "jdbc:sqlite:" + plugin.getDataFolder() + "/" + fileName + ".db";
 
-        String[] tablesSql = new String[6];
+        String[] tablesSql = new String[7];
 
         tablesSql[0] = "CREATE TABLE IF NOT EXISTS fw_challonge_tournament ("+
                 "id  INTEGER NOT NULL," +
@@ -122,6 +122,10 @@ public class SQLiteConnectionService {
                 "CONSTRAINT fk_fw_brackets_x_fw_tournament FOREIGN KEY (tournament_name) REFERENCES fw_tournament (name)" +
                 ")";
 
+        tablesSql[6] = "CREATE TABLE IF NOT EXISTS fw_uuid_cache (" +
+                "player_name  varchar(17)," +
+                "player_uuid  varchar(36)" +
+                ")";
 
         for(String sql: tablesSql) {
             try (Connection conn = DriverManager.getConnection(url);
@@ -479,6 +483,38 @@ public class SQLiteConnectionService {
             pstmt.executeUpdate();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
+        }
+    }
+
+    public UUID getCachedUUID(Fwtournament plugin, String dbName, String playerName) {
+        String getUserUUID = "SELECT player_uuid FROM fw_uuid_cache WHERE player_name = ?";
+        UUID playerUUID = null;
+        try (Connection conn = this.connect(plugin, dbName)) {
+            PreparedStatement pstmt = conn.prepareStatement(getUserUUID);
+            pstmt.setString(1, playerName);
+            ResultSet rs    = pstmt.executeQuery();
+
+            while (rs.next()) {
+                String playerUUIDString = rs.getString("player_uuid");
+                playerUUID = UUID.fromString(playerUUIDString);
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
+        return playerUUID;
+    }
+
+    public void cacheUUID(Fwtournament plugin, String dbName, String playerName, UUID playerUUID) {
+        String puttUserUUID = "INSERT INTO player_uuid(player_name,player_uuid) VALUES(?,?)";
+
+        try (Connection conn = this.connect(plugin, dbName)) {
+            PreparedStatement pstmt = conn.prepareStatement(puttUserUUID);
+            pstmt.setString(1, playerName);
+            pstmt.setString(2, playerUUID.toString());
+            pstmt.executeUpdate();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
         }
     }
 

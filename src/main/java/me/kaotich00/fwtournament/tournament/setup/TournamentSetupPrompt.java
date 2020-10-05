@@ -2,6 +2,7 @@ package me.kaotich00.fwtournament.tournament.setup;
 
 import me.kaotich00.fwtournament.Fwtournament;
 import me.kaotich00.fwtournament.kit.gui.KitGUI;
+import me.kaotich00.fwtournament.services.SimpleMojangApiService;
 import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.tournament.Tournament;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
@@ -106,37 +107,19 @@ public class TournamentSetupPrompt implements ConversationAbandonedListener {
 
             sender.sendMessage(ChatFormatter.formatSuccessMessage("Validanting minecraft username..."));
 
-            CompletableFuture<Boolean> completableFuture = CompletableFuture.supplyAsync(() -> {
-                Mojang api = new Mojang().connect();
-                String playerUUID = null;
-                try {
-                    playerUUID = api.getUUIDOfUsername(input);
-                    context.setSessionData("player_uuid", playerUUID);
-                } catch (Exception e) {
-                    return false;
-                }
-                if (playerUUID == null) {
-                    return false;
-                }
-                return true;
-            });
-            Boolean result = false;
-            try {
-                result = completableFuture.get();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
+            UUID playerUUID = SimpleMojangApiService.getInstance().getPlayerUUID(input);
+            if(playerUUID!= null) {
+                context.setSessionData("player_uuid", playerUUID);
             }
-            return result;
+
+            return playerUUID != null;
         }
 
         @Override
         protected Prompt acceptValidatedInput(ConversationContext context, String input) {
             Player sender = (Player) context.getForWhom();
 
-            String playerUUIDString = UUIDUtils.parseUUID(context.getSessionData("player_uuid").toString());
-            UUID playerUUID = UUID.fromString(playerUUIDString);
+            UUID playerUUID = (UUID) context.getSessionData("player_uuid");
 
             SimpleTournamentService simpleTournamentService = SimpleTournamentService.getInstance();
             if(simpleTournamentService.addPlayerToTournament(playerUUID, input)) {

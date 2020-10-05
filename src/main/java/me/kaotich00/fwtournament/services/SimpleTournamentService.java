@@ -8,11 +8,15 @@ import me.kaotich00.fwtournament.kit.Kit;
 import me.kaotich00.fwtournament.storage.sqlite.SQLiteConnectionService;
 import me.kaotich00.fwtournament.tournament.Tournament;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
+import me.kaotich00.fwtournament.utils.UUIDUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
+import org.shanerx.mojang.Mojang;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -196,7 +200,7 @@ public class SimpleTournamentService {
         }, 200L);
     }
 
-    public void checkTournamentDeath(Player player) throws ExecutionException, InterruptedException {
+    public void checkTournamentDeath(Player player) {
 
         Set<Bracket> activeBrackets = currentTournament.getActiveBrackets();
 
@@ -237,25 +241,73 @@ public class SimpleTournamentService {
                     // generated
                     if (remainingBrackets.isEmpty()) {
                         Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("Tournament round is over"));
-                        CompletableFuture.supplyAsync(() -> {
-                            boolean isTournamentEnded = false;
-                            try {
-                                isTournamentEnded = ChallongeIntegrationFactory.getTournamentBrackets(null, tournament);
-                            } catch (ParseException e) {
-                                e.printStackTrace();
-                            }
-                            return isTournamentEnded;
-                        }).thenAccept(isTournamentEnded -> {
-                            if(isTournamentEnded) {
-                                Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("Congratulation to the winner of the tournament: " + Objects.requireNonNull(Bukkit.getServer().getPlayer(bracket.getWinner())).getName()));
-                            }
-                        });
+                        refreshTournamentBrackets();
                     } else {
                         checkForNewMatchmakings();
                     }
                 });
             }
         }
+    }
+
+    public void refreshTournamentBrackets() {
+        CompletableFuture.supplyAsync(() -> {
+            JSONArray responseData = null;
+            try {
+                responseData = ChallongeIntegrationFactory.getTournamentBrackets(null, currentTournament);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            return responseData;
+        }).thenAccept(responseData -> {
+            // If response size is empty
+            // the tournament has ended
+            // Therefore the winner is announced
+            if(responseData.size() == 0) {
+                CompletableFuture.supplyAsync(() -> {
+                    try {
+                        ChallongeIntegrationFactory.endTournament(null, currentTournament);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                    return true;
+                }).thenAccept(result -> {
+                    endTournament(currentTournament);
+                    Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The tournament has ended!"));
+                    //Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("Congratulation to the winner of the tournament: " + Objects.requireNonNull(Bukkit.getServer().getPlayer(bracket.getWinner())).getName()));
+                });
+            } else {
+                for(int i = 0; i < responseData.size(); i++) {
+                    JSONObject match = (JSONObject) responseData.get(i);
+                    match = (JSONObject) match.get("match");
+
+                    String matchId = match.get("id").toString();
+                    String playerOneId = match.get("player1_id").toString();
+                    String playerTwoId = match.get("player2_id").toString();
+
+                    CompletableFuture.supplyAsync(() -> {
+                        try {
+                            String playerOneName = ChallongeIntegrationFactory.getParticipantName(null, currentTournament, playerOneId);
+                            String playerTwoName = ChallongeIntegrationFactory.getParticipantName(null, currentTournament, playerTwoId);
+                            Mojang api = new Mojang().connect();
+
+                            UUID playerOneUUID = UUID.fromString(UUIDUtils.parseUUID(api.getUUIDOfUsername(playerOneName)));
+                            UUID playerTwoUUID = UUID.fromString(UUIDUtils.parseUUID(api.getUUIDOfUsername(playerTwoName)));
+
+                            SimpleTournamentService.getInstance().pushNewBracket(matchId, currentTournament, playerOneName, playerOneUUID, playerTwoName, playerTwoUUID, playerOneId, playerTwoId);
+
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+
+                        return true;
+                    }).thenAccept(result -> {
+                        checkForNewMatchmakings();
+                    });
+
+                }
+            }
+        });
     }
 
     public void endTournament(Tournament tournament) {
