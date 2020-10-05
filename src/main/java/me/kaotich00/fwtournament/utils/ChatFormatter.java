@@ -16,9 +16,9 @@ public class ChatFormatter {
     }
 
     public static String chatHeader() {
-        return  ChatColor.AQUA + "oOo------------------[ " +
-                ChatColor.DARK_AQUA + ChatColor.BOLD + "FwTournament" +
-                ChatColor.AQUA + " ]------------------oOo";
+        return  parseColorMessage("oOo----------------[ ", ColorUtil.colorPrimary) +
+                parseColorMessage("FwTournament ", ColorUtil.colorSecondary) +
+                parseColorMessage(" ]----------------oOo ", ColorUtil.colorPrimary);
     }
 
     public static String chatFooter() {

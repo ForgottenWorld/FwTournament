@@ -10,6 +10,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.json.simple.parser.ParseException;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
 public class StartCommand extends AdminCommand {
 
     @Override
@@ -30,16 +33,27 @@ public class StartCommand extends AdminCommand {
             if(tournament.getChallongeTournament() != null) {
                 try {
                     sender.sendMessage(ChatFormatter.formatSuccessMessage("Starting tournament..."));
-                    ChallongeIntegrationFactory.startTournament((Player) sender, tournament);
-                    sender.sendMessage(ChatFormatter.formatSuccessMessage("Tournament started!"));
+                    CompletableFuture<Void> completableFuture = CompletableFuture.runAsync(() -> {
+                        try {
+                            ChallongeIntegrationFactory.startTournament((Player) sender, tournament);
+                            sender.sendMessage(ChatFormatter.formatSuccessMessage("Tournament started!"));
 
-                    tournament.setStarted(true);
+                            tournament.setStarted(true);
 
-                    sender.sendMessage(ChatFormatter.formatSuccessMessage("Collecting current brackets..."));
-                    ChallongeIntegrationFactory.getTournamentBrackets((Player) sender, tournament);
-                    sender.sendMessage(ChatFormatter.formatSuccessMessage("Brackets collected!"));
-                } catch (ParseException e) {
-                    sender.sendMessage(ChatFormatter.formatErrorMessage("Error while starting tournament! Is it already started?"));
+                            sender.sendMessage(ChatFormatter.formatSuccessMessage("Collecting current brackets..."));
+                            ChallongeIntegrationFactory.getTournamentBrackets((Player) sender, tournament);
+                            sender.sendMessage(ChatFormatter.formatSuccessMessage("Brackets collected!"));
+
+                            SimpleTournamentService.getInstance().checkForNewMatchmakings();
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                    completableFuture.get();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
                 }
             } else {
                 sender.sendMessage(ChatFormatter.formatErrorMessage("The tournament must be generated before starting it, with the command /torneo generate <name>"));

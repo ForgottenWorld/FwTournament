@@ -1,6 +1,7 @@
 package me.kaotich00.fwtournament.services;
 
 import me.kaotich00.fwtournament.arena.Arena;
+import me.kaotich00.fwtournament.bracket.Bracket;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -20,6 +21,8 @@ public class SimpleArenaService {
     private HashMap<UUID, String> playerArenaNameCreation;
     private HashMap<UUID, HashMap<Integer, Location>> playerArenaCoordinates;
 
+    private HashMap<Bracket, Arena> occupiedArenas;
+
     private SimpleArenaService() {
         if(simpleArenaService != null) {
             throw new RuntimeException("Use getInstance() method to get the single instance of this class.");
@@ -28,6 +31,7 @@ public class SimpleArenaService {
         this.playerArenaCreation = new HashMap<>();
         this.playerArenaCoordinates = new HashMap<>();
         this.playerArenaNameCreation = new HashMap<>();
+        this.occupiedArenas = new HashMap<>();
     }
 
     public static SimpleArenaService getInstance() {
@@ -107,6 +111,18 @@ public class SimpleArenaService {
 
     public HashMap<String,Arena> getArenas() {
         return this.arenas;
+    }
+
+    public HashMap<Bracket, Arena> getOccupiedArenas() {
+        return occupiedArenas;
+    }
+
+    public void addToOccupiedArenas(Bracket bracket, Arena arena) {
+        this.occupiedArenas.put(bracket, arena);
+    }
+
+    public void remnoveFromOccupiedArenas(Bracket bracket, Arena arena) {
+        this.occupiedArenas.remove(bracket);
     }
 
 }

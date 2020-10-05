@@ -1,19 +1,24 @@
 package me.kaotich00.fwtournament.tournament.setup;
 
-import com.james090500.APIManager.UserInfo;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import me.kaotich00.fwtournament.Fwtournament;
 import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.kit.gui.KitGUI;
 import me.kaotich00.fwtournament.tournament.Tournament;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
 import me.kaotich00.fwtournament.utils.ColorUtil;
+import me.kaotich00.fwtournament.utils.UUIDUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.conversations.*;
 import org.bukkit.entity.Player;
+import org.shanerx.mojang.Mojang;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
 
 public class TournamentSetupPrompt implements ConversationAbandonedListener {
 
@@ -101,23 +106,40 @@ public class TournamentSetupPrompt implements ConversationAbandonedListener {
 
         @Override
         protected boolean isInputValid(ConversationContext context, String input) {
-            String playerUUID = null;
+            Player sender = (Player) context.getForWhom();
+
+            sender.sendMessage(ChatFormatter.formatSuccessMessage("Validanting minecraft username..."));
+
+            CompletableFuture<Boolean> completableFuture = CompletableFuture.supplyAsync(() -> {
+                Mojang api = new Mojang().connect();
+                String playerUUID = null;
+                try {
+                    playerUUID = api.getUUIDOfUsername(input);
+                    context.setSessionData("player_uuid", playerUUID);
+                } catch (Exception e) {
+                    return false;
+                }
+                if (playerUUID == null) {
+                    return false;
+                }
+                return true;
+            });
+            Boolean result = false;
             try {
-                playerUUID = UserInfo.getParsedUUID(input);
-            }catch(Exception e) {
-                return false;
+                result = completableFuture.get();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
             }
-            if(playerUUID == null) {
-                return false;
-            }
-            return true;
+            return result;
         }
 
         @Override
         protected Prompt acceptValidatedInput(ConversationContext context, String input) {
             Player sender = (Player) context.getForWhom();
 
-            String playerUUIDString = UserInfo.getParsedUUID(input);
+            String playerUUIDString = UUIDUtils.parseUUID(context.getSessionData("player_uuid").toString());
             UUID playerUUID = UUID.fromString(playerUUIDString);
 
             SimpleTournamentService simpleTournamentService = SimpleTournamentService.getInstance();

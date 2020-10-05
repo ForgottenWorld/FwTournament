@@ -26,10 +26,21 @@ public class HTTPClient {
             conn.setReadTimeout(150000);
             conn.setConnectTimeout(150000);
             conn.setRequestMethod(requestMethod);
-            conn.setDoInput(true);
             conn.setDoOutput(true);
 
-            if(requestMethod.equals("POST") || requestMethod.equals("PUT")) {
+            if(requestMethod.equals("PUT")) {
+                conn.setRequestProperty("Content-Type", "multipart/form-data");
+                conn.setRequestProperty("Connection", "keep-alive");
+
+                OutputStreamWriter out = new OutputStreamWriter(conn.getOutputStream());
+                out.write(formatPostDataParams(postDataParams));
+                out.close();
+
+            } else {
+                conn.setDoInput(true);
+            }
+
+            if(requestMethod.equals("POST")) {
                 conn.setRequestProperty("Content-Type", "multipart/form-data");
                 conn.setRequestProperty("Connection", "keep-alive");
 

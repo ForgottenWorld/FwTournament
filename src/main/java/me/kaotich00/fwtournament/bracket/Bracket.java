@@ -1,5 +1,6 @@
 package me.kaotich00.fwtournament.bracket;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public class Bracket {
@@ -110,4 +111,25 @@ public class Bracket {
         this.winnerChallongeId = winnerChallongeId;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Bracket bracket = (Bracket) o;
+        return getTournamentName().equals(bracket.getTournamentName()) &&
+                getChallongeMatchId().equals(bracket.getChallongeMatchId()) &&
+                getFirstPlayerName().equals(bracket.getFirstPlayerName()) &&
+                getFirstPlayerChallongeId().equals(bracket.getFirstPlayerChallongeId()) &&
+                getFirstPlayerUUID().equals(bracket.getFirstPlayerUUID()) &&
+                getSecondPlayerName().equals(bracket.getSecondPlayerName()) &&
+                getSecondPlayerChallongeId().equals(bracket.getSecondPlayerChallongeId()) &&
+                getSecondPlayerUUID().equals(bracket.getSecondPlayerUUID()) &&
+                Objects.equals(getWinner(), bracket.getWinner()) &&
+                Objects.equals(getWinnerChallongeId(), bracket.getWinnerChallongeId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getTournamentName(), getChallongeMatchId(), getFirstPlayerName(), getFirstPlayerChallongeId(), getFirstPlayerUUID(), getSecondPlayerName(), getSecondPlayerChallongeId(), getSecondPlayerUUID(), getWinner(), getWinnerChallongeId());
+    }
 }

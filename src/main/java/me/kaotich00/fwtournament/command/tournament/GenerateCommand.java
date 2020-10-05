@@ -11,6 +11,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.json.simple.parser.ParseException;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
 public class GenerateCommand extends AdminCommand {
 
     @Override
@@ -30,8 +33,14 @@ public class GenerateCommand extends AdminCommand {
 
             try {
                 if(tournament.getChallongeTournament() != null) {
-                    sender.sendMessage(ChatFormatter.formatErrorMessage("The tournament has already been generated, skipping."));
-                    ChallongeIntegrationFactory.getTournamentBrackets((Player) sender, tournament);
+                    CompletableFuture<Void> completableFuture = CompletableFuture.runAsync(() -> {
+                        try {
+                            ChallongeIntegrationFactory.getTournamentBrackets((Player) sender, tournament);
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                    completableFuture.get();
                 } else {
                     String challongeTournamentName = tournament.getName();
                     String challongeTournamentDescription = "test descrizione";
@@ -39,22 +48,36 @@ public class GenerateCommand extends AdminCommand {
                     String challongeOpenSignup = "false";
                     String challongeTournamentLink = Fwtournament.getDefaultConfig().getString("challonge_tournament_prefix") + "_" + tournament.getName();
 
-                    ChallongeTournament challongeTournament = ChallongeIntegrationFactory.createTournament((Player) sender, challongeTournamentName, challongeTournamentDescription, challongeTournamentType, challongeOpenSignup, challongeTournamentLink);
-                    sender.sendMessage(ChatFormatter.formatSuccessMessage("Generating Challonge tournament..."));
+                    CompletableFuture<Void> completableFuture = CompletableFuture.runAsync(() -> {
+                        ChallongeTournament challongeTournament = null;
+                        try {
+                            challongeTournament = ChallongeIntegrationFactory.createTournament((Player) sender, challongeTournamentName, challongeTournamentDescription, challongeTournamentType, challongeOpenSignup, challongeTournamentLink);
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                        sender.sendMessage(ChatFormatter.formatSuccessMessage("Generating Challonge tournament..."));
 
-                    if (challongeTournament == null) {
-                        sender.sendMessage(ChatFormatter.formatErrorMessage("Error while generating tournament. Maybe it is already existent."));
-                    } else {
-                        sender.sendMessage(ChatFormatter.formatSuccessMessage("Successfully generated tournament at link: " + challongeTournament.getChallongeLink()));
-                        tournament.setChallongeTournament(challongeTournament);
-                        sender.sendMessage(ChatFormatter.formatSuccessMessage("Adding participants to Challonge tournament..."));
-                        ChallongeIntegrationFactory.addParticipantsToTournament((Player) sender, tournament);
-                        sender.sendMessage(ChatFormatter.formatSuccessMessage("Successfully added participants to the tournament"));
-                    }
+                        if (challongeTournament == null) {
+                            sender.sendMessage(ChatFormatter.formatErrorMessage("Error while generating tournament. Maybe it is already existent."));
+                        } else {
+                            sender.sendMessage(ChatFormatter.formatSuccessMessage("Successfully generated tournament at link: " + challongeTournament.getChallongeLink()));
+                            tournament.setChallongeTournament(challongeTournament);
+                            sender.sendMessage(ChatFormatter.formatSuccessMessage("Adding participants to Challonge tournament..."));
+                            try {
+                                ChallongeIntegrationFactory.addParticipantsToTournament((Player) sender, tournament);
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
+                            sender.sendMessage(ChatFormatter.formatSuccessMessage("Successfully added participants to the tournament"));
+                        }
 
-                    tournament.setGenerated(true);
+                        tournament.setGenerated(true);
+                    });
+                    completableFuture.get();
                 }
-            } catch (ParseException e) {
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
                 e.printStackTrace();
             }
         } else {

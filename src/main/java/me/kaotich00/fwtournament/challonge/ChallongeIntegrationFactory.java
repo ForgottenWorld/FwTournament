@@ -2,23 +2,28 @@ package me.kaotich00.fwtournament.challonge;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import com.james090500.APIManager.UserInfo;
 import me.kaotich00.fwtournament.bracket.Bracket;
 import me.kaotich00.fwtournament.challonge.objects.ChallongeTournament;
 import me.kaotich00.fwtournament.http.HTTPClient;
+import me.kaotich00.fwtournament.services.SimpleArenaService;
 import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.tournament.Tournament;
+import me.kaotich00.fwtournament.utils.ChatFormatter;
 import me.kaotich00.fwtournament.utils.HTTPUtils;
+import me.kaotich00.fwtournament.utils.UUIDUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.shanerx.mojang.Mojang;
 
 import java.math.BigInteger;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class ChallongeIntegrationFactory {
 
@@ -119,6 +124,24 @@ public class ChallongeIntegrationFactory {
         JSONArray responseData = null;
         try {
             responseData = (JSONArray) parser.parse(response);
+
+            // If response size is empty
+            // the tournament has ended
+            // Therefore the winner is announced
+            if(responseData.size() == 0) {
+                CompletableFuture<Void> completableFuture = CompletableFuture.runAsync(() -> {
+                    // Close the tournament
+                    try {
+                        endTournament(sender, tournament);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+
+                    Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The tournament has ended!"));
+                });
+                completableFuture.get();
+            }
+
             for(int i = 0; i < responseData.size(); i++) {
                 JSONObject match = (JSONObject) responseData.get(i);
                 match = (JSONObject) match.get("match");
@@ -130,11 +153,15 @@ public class ChallongeIntegrationFactory {
                 String playerOneName = getParticipantName(sender, tournament, playerOneId);
                 String playerTwoName = getParticipantName(sender, tournament, playerTwoId);
 
-                UUID playerOneUUID = UUID.fromString(UserInfo.getParsedUUID(playerOneName));
-                UUID playerTwoUUID = UUID.fromString(UserInfo.getParsedUUID(playerTwoName));
+                Mojang api = new Mojang().connect();
+
+                UUID playerOneUUID = UUID.fromString(UUIDUtils.parseUUID(api.getUUIDOfUsername(playerOneName)));
+                UUID playerTwoUUID = UUID.fromString(UUIDUtils.parseUUID(api.getUUIDOfUsername(playerTwoName)));
 
                 SimpleTournamentService.getInstance().pushNewBracket(matchId, tournament, playerOneName, playerOneUUID, playerTwoName, playerTwoUUID, playerOneId, playerTwoId);
             }
+
+            SimpleTournamentService.getInstance().checkForNewMatchmakings();
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -179,14 +206,19 @@ public class ChallongeIntegrationFactory {
         String URI = HTTPUtils.CHALLONGE_POST_MATCH_RESULT.replace("{tournament}",challongeTournament.getId().toString()).replace("{match_id}", bracket.getChallongeMatchId());
         String requestMethod = "PUT";
 
-        String response = HTTPClient.fetchHttpRequest(URI, requestMethod, postDataParams, sender);
-        JSONParser parser = new JSONParser();
-        JSONObject responseData = null;
-        try {
-            responseData = (JSONObject) parser.parse(response);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
+        HTTPClient.fetchHttpRequest(URI, requestMethod, postDataParams, sender);
+    }
+
+    public static void endTournament(Player sender, Tournament tournament) throws ParseException {
+        ChallongeTournament challongeTournament = tournament.getChallongeTournament();
+
+        Multimap<String,String> postDataParams = ArrayListMultimap.create();
+        postDataParams.put("api_key", HTTPUtils.API_KEY);
+
+        String URI = HTTPUtils.CHALLONGE_END_TOURNAMENT.replace("{tournament}",challongeTournament.getId().toString());
+        String requestMethod = "POST";
+
+        HTTPClient.fetchHttpRequest(URI, requestMethod, postDataParams, sender);
     }
 
 }
