@@ -161,7 +161,11 @@ public class SimpleTournamentService {
             return;
         }
 
-        Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The math between " + playerBracket.getFirstPlayerName() + " and " + playerBracket.getSecondPlayerName() + " has been detected. Teleporting players in 10 seconds."));
+        // Set the arena as occupied
+        freeArena.setOccupied(true);
+        SimpleArenaService.getInstance().addToOccupiedArenas(playerBracket, freeArena);
+
+        Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The match between " + playerBracket.getFirstPlayerName() + " and " + playerBracket.getSecondPlayerName() + " has been detected. Teleporting players in 10 seconds."));
 
         Bracket finalPlayerBracket = playerBracket;
         Arena finalFreeArena = freeArena;
@@ -186,10 +190,6 @@ public class SimpleTournamentService {
                 firstPlayer.getInventory().addItem(itemStack);
                 secondPlayer.getInventory().addItem(itemStack);
             }
-
-            // Set the arena as occupied
-            finalFreeArena.setOccupied(true);
-            SimpleArenaService.getInstance().addToOccupiedArenas(finalPlayerBracket, finalFreeArena);
 
             // Add bracket as active
             tournament.startBracket(finalPlayerBracket);
@@ -222,6 +222,8 @@ public class SimpleTournamentService {
                 Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The winner of the match is " + Objects.requireNonNull(Bukkit.getServer().getPlayer(bracket.getWinner())).getName()));
 
                 Tournament tournament = SimpleTournamentService.getInstance().getTournament().get();
+                tournament.stopBracket(bracket);
+
                 Set<Bracket> remainingBrackets = tournament.getRemainingBrackets();
 
                 CompletableFuture.supplyAsync(() -> {
@@ -234,7 +236,16 @@ public class SimpleTournamentService {
                 }).thenAccept(result -> {
                     HashMap<Bracket,Arena> occupiedArenas = SimpleArenaService.getInstance().getOccupiedArenas();
                     Arena occupiedArena = occupiedArenas.get(bracket);
-                    occupiedArena.setOccupied(false);
+                    String occupiedArenaName = occupiedArena.getArenaName();
+                    SimpleArenaService.getInstance().removeFromOccupiedArenas(bracket);
+
+                    HashMap<String, Arena> arenas = SimpleArenaService.getInstance().getArenas();
+                    for(Map.Entry<String,Arena> entry: arenas.entrySet()) {
+                        Arena arena = entry.getValue();
+                        if(!arena.getArenaName().equals(occupiedArenaName)) {
+                            arena.setOccupied(false);
+                        }
+                    }
 
                     // This means every bracket has a winner.
                     // Therefore new brackets need to be

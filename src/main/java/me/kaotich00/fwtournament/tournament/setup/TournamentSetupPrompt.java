@@ -103,30 +103,27 @@ public class TournamentSetupPrompt implements ConversationAbandonedListener {
 
         @Override
         protected boolean isInputValid(ConversationContext context, String input) {
-            Player sender = (Player) context.getForWhom();
-
-            sender.sendMessage(ChatFormatter.formatSuccessMessage("Validanting minecraft username..."));
-
-            UUID playerUUID = SimpleMojangApiService.getInstance().getPlayerUUID(input);
-            if(playerUUID!= null) {
-                context.setSessionData("player_uuid", playerUUID);
-            }
-
-            return playerUUID != null;
+            return true;
         }
 
         @Override
         protected Prompt acceptValidatedInput(ConversationContext context, String input) {
             Player sender = (Player) context.getForWhom();
+            CompletableFuture.runAsync(() -> {
+                sender.sendMessage(ChatFormatter.formatSuccessMessage("Validanting minecraft username..."));
 
-            UUID playerUUID = (UUID) context.getSessionData("player_uuid");
+                UUID playerUUID = SimpleMojangApiService.getInstance().getPlayerUUID(input);
+                if(playerUUID!= null) {
+                    context.setSessionData("player_uuid", playerUUID);
+                }
 
-            SimpleTournamentService simpleTournamentService = SimpleTournamentService.getInstance();
-            if(simpleTournamentService.addPlayerToTournament(playerUUID, input)) {
-                sender.sendMessage(ChatFormatter.formatSuccessMessage("Successfully added " + input + " to participants"));
-            } else {
-                sender.sendMessage(ChatFormatter.formatErrorMessage("The player " + input + " is already a participant"));
-            }
+                SimpleTournamentService simpleTournamentService = SimpleTournamentService.getInstance();
+                if(simpleTournamentService.addPlayerToTournament(playerUUID, input)) {
+                    sender.sendMessage(ChatFormatter.formatSuccessMessage("Successfully added " + input + " to participants"));
+                } else {
+                    sender.sendMessage(ChatFormatter.formatErrorMessage("The player " + input + " is already a participant"));
+                }
+            });
             return new SetupEnterInit();
         }
 

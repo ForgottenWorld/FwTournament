@@ -123,7 +123,7 @@ public class SimpleArenaService {
         this.occupiedArenas.put(bracket, arena);
     }
 
-    public void remnoveFromOccupiedArenas(Bracket bracket, Arena arena) {
+    public void removeFromOccupiedArenas(Bracket bracket) {
         this.occupiedArenas.remove(bracket);
     }
 
