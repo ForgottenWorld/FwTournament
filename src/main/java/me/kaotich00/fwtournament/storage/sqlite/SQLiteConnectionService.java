@@ -69,6 +69,7 @@ public class SQLiteConnectionService {
                 "id_challonge INTEGER," +
                 "is_started INTEGER," +
                 "is_generated INTEGER," +
+                "current_round INTEGER," +
                 "PRIMARY KEY (name ASC)," +
                 "CONSTRAINT fk_fw_tournament_x_fw_challonge_tournament FOREIGN KEY (id_challonge) REFERENCES fw_challonge_tournament (id)" +
                 ")";
@@ -160,6 +161,7 @@ public class SQLiteConnectionService {
                         " tournament.name as tournament_name," +
                         " tournament.is_started as tournament_is_started," +
                         " tournament.is_generated as tournament_is_generated," +
+                        " tournament.current_round as current_round," +
                         " challonge.id as challonge_id," +
                         " challonge.name as challonge_name," +
                         " challonge.description as challonge_description," +
@@ -176,11 +178,13 @@ public class SQLiteConnectionService {
                 String tournamentName = rs.getString("tournament_name");
                 Boolean tournamentIsStarted = rs.getInt("tournament_is_started") == 1 ? true : false;
                 Boolean tournamentIsGenerated = rs.getInt("tournament_is_generated") == 1 ? true : false;
+                Integer currentRound = rs.getInt("current_round");
                 SimpleTournamentService simpleTournamentService = SimpleTournamentService.getInstance();
                 simpleTournamentService.newTournament(tournamentName);
                 Tournament tournament = simpleTournamentService.getTournament().get();
                 tournament.setStarted(tournamentIsStarted);
                 tournament.setGenerated(tournamentIsGenerated);
+                tournament.setCurrentRound(currentRound);
 
                 // Creating new challonge tournament
                 Integer challongeTournamentId = rs.getInt("challonge_id");
@@ -341,12 +345,13 @@ public class SQLiteConnectionService {
                 pstmt.setString(4, challongeTournament.getChallongeLink());
                 pstmt.executeUpdate();
 
-                String insertTournamentSql = "INSERT OR IGNORE INTO fw_tournament(name,id_challonge,is_started,is_generated) VALUES(?,?,?,?)";
+                String insertTournamentSql = "INSERT OR IGNORE INTO fw_tournament(name,id_challonge,is_started,is_generated,current_round) VALUES(?,?,?,?,?)";
                 pstmt = conn.prepareStatement(insertTournamentSql);
                 pstmt.setString(1, tournament.getName());
                 pstmt.setInt(2, tournament.getChallongeTournament().getId().intValue());
                 pstmt.setInt(3, tournament.isStarted() ? 1 : 0);
                 pstmt.setInt(4, tournament.isGenerated() ? 1 : 0);
+                pstmt.setInt(5, tournament.getCurrentRound());
                 pstmt.executeUpdate();
 
                 String deleteKitSql = "DELETE FROM fw_kit";
@@ -506,7 +511,7 @@ public class SQLiteConnectionService {
     }
 
     public void cacheUUID(Fwtournament plugin, String dbName, String playerName, UUID playerUUID) {
-        String puttUserUUID = "INSERT INTO player_uuid(player_name,player_uuid) VALUES(?,?)";
+        String puttUserUUID = "INSERT INTO fw_uuid_cache(player_name,player_uuid) VALUES(?,?)";
 
         try (Connection conn = this.connect(plugin, dbName)) {
             PreparedStatement pstmt = conn.prepareStatement(puttUserUUID);

@@ -20,7 +20,6 @@ import org.shanerx.mojang.Mojang;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 public class SimpleTournamentService {
 
@@ -199,6 +198,10 @@ public class SimpleTournamentService {
 
     public void checkTournamentDeath(Player player) {
 
+        for(Bracket bracker: currentTournament.getBracketsList()) {
+            currentTournament.startBracket(bracker);
+        }
+
         Set<Bracket> activeBrackets = currentTournament.getActiveBrackets();
 
         if(activeBrackets.isEmpty()) {
@@ -209,14 +212,25 @@ public class SimpleTournamentService {
             if(bracket.getFirstPlayerUUID().equals(player.getUniqueId())) {
                 bracket.setWinner(bracket.getSecondPlayerUUID());
                 bracket.setWinnerChallongeId(bracket.getSecondPlayerChallongeId());
+                this.currentTournament.removePlayer(bracket.getFirstPlayerUUID());
             }
             if(bracket.getSecondPlayerUUID().equals(player.getUniqueId())) {
                 bracket.setWinner(bracket.getFirstPlayerUUID());
                 bracket.setWinnerChallongeId(bracket.getFirstPlayerChallongeId());
+                this.currentTournament.removePlayer(bracket.getSecondPlayerUUID());
             }
 
             if(bracket.getWinner() != null) {
-                Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The winner of the match is " + Objects.requireNonNull(Bukkit.getServer().getPlayer(bracket.getWinner())).getName()));
+                //Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The winner of the match is " + Objects.requireNonNull(Bukkit.getServer().getPlayer(bracket.getWinner())).getName()));
+
+                Player firstPlayer = Bukkit.getPlayer(bracket.getFirstPlayerUUID());
+                if(firstPlayer != null) {
+                    firstPlayer.setGameMode(GameMode.SPECTATOR);
+                }
+                Player secondPlayer = Bukkit.getPlayer(bracket.getSecondPlayerUUID());
+                if(secondPlayer != null) {
+                    secondPlayer.setGameMode(GameMode.SPECTATOR);
+                }
 
                 Tournament tournament = SimpleTournamentService.getInstance().getTournament().get();
                 tournament.stopBracket(bracket);
@@ -241,7 +255,7 @@ public class SimpleTournamentService {
                     // Therefore new brackets need to be
                     // generated
                     if (remainingBrackets.isEmpty()) {
-                        Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("Tournament round is over"));
+                        Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("Round " + this.currentTournament.getCurrentRound() + " is over!"));
                         refreshTournamentBrackets();
                     } else {
                         checkForNewMatchmakings();
@@ -279,21 +293,22 @@ public class SimpleTournamentService {
                     //Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("Congratulation to the winner of the tournament: " + Objects.requireNonNull(Bukkit.getServer().getPlayer(bracket.getWinner())).getName()));
                 });
             } else {
-                for(int i = 0; i < responseData.size(); i++) {
-                    JSONObject match = (JSONObject) responseData.get(i);
-                    match = (JSONObject) match.get("match");
+                this.currentTournament.setCurrentRound(this.currentTournament.getCurrentRound() + 1);
+                CompletableFuture.supplyAsync(() -> {
+                    Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("Calculating new matches..."));
+                    for(int i = 0; i < responseData.size(); i++) {
+                        JSONObject match = (JSONObject) responseData.get(i);
+                        match = (JSONObject) match.get("match");
 
-                    // Get only the brackets for current round
-                    int round = Integer.valueOf(match.get("round").toString());
-                    if(currentTournament.getCurrentRound() != round) {
-                        continue;
-                    }
+                        // Get only the brackets for current round
+                        int round = Integer.valueOf(match.get("round").toString());
+                        if (currentTournament.getCurrentRound() != round) {
+                            continue;
+                        }
 
-                    String matchId = match.get("id").toString();
-                    String playerOneId = match.get("player1_id").toString();
-                    String playerTwoId = match.get("player2_id").toString();
-
-                    CompletableFuture.supplyAsync(() -> {
+                        String matchId = match.get("id").toString();
+                        String playerOneId = match.get("player1_id").toString();
+                        String playerTwoId = match.get("player2_id").toString();
                         try {
                             String playerOneName = ChallongeIntegrationFactory.getParticipantName(null, currentTournament, playerOneId);
                             String playerTwoName = ChallongeIntegrationFactory.getParticipantName(null, currentTournament, playerTwoId);
@@ -307,13 +322,12 @@ public class SimpleTournamentService {
                         } catch (ParseException e) {
                             e.printStackTrace();
                         }
+                    }
+                    return true;
 
-                        return true;
-                    }).thenAccept(result -> {
-                        checkForNewMatchmakings();
-                    });
-
-                }
+                }).thenAccept(result -> {
+                    checkForNewMatchmakings();
+                });
             }
         });
     }

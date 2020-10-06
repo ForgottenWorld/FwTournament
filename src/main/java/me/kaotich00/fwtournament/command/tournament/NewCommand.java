@@ -18,8 +18,10 @@ public class NewCommand extends AdminCommand {
 
         if(result) {
             sender.sendMessage(ChatFormatter.formatSuccessMessage("Successfully created tournament"));
-            sender.sendMessage(ChatFormatter.formatSuccessMessage("You can now setup the tournament by typing"));
-            sender.sendMessage(ChatFormatter.formatSuccessMessage("/torneo setup"));
+            sender.sendMessage(ChatFormatter.formatSuccessMessage("You can now add, remove players or mofify tournament kit with"));
+            sender.sendMessage(ChatFormatter.formatSuccessMessage("/torneo add <participant_list>"));
+            sender.sendMessage(ChatFormatter.formatSuccessMessage("/torneo remove <participant_list>"));
+            sender.sendMessage(ChatFormatter.formatSuccessMessage("/torneo kit"));
         } else {
             sender.sendMessage("A tournament is already created. Skipping.");
         }

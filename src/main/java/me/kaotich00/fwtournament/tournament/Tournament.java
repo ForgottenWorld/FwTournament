@@ -33,7 +33,7 @@ public class Tournament {
         this.bracketsList = new HashSet<>();
         this.tournamentKit = new Kit();
         this.activeBrackets = new HashSet<>();
-        this.currentRound = 1;
+        this.currentRound = 0;
     }
 
     public void addPlayer(UUID uuid, String playerName) {

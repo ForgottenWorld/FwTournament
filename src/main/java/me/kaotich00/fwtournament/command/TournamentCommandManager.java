@@ -28,10 +28,13 @@ public class TournamentCommandManager implements TabExecutor {
 
     private void setup() {
         this.commandRegistry.put(CommandTypes.TORNEO_NEW_COMMAND, new NewCommand());
-        this.commandRegistry.put(CommandTypes.TORNEO_SETUP_COMMAND, new SetupCommand());
         this.commandRegistry.put(CommandTypes.TORNEO_GENERATE_COMMAND, new GenerateCommand());
         this.commandRegistry.put(CommandTypes.TORNEO_START_COMMAND, new StartCommand());
         this.commandRegistry.put(CommandTypes.TORNEO_INFO_COMMAND, new InfoCommand());
+        this.commandRegistry.put(CommandTypes.TORNEO_ADD_COMMAND, new AddCommand());
+        this.commandRegistry.put(CommandTypes.TORNEO_KIT_COMMAND, new KitCommand());
+        this.commandRegistry.put(CommandTypes.TORNEO_REMOVE_COMMAND, new RemoveCommand());
+        this.commandRegistry.put(CommandTypes.TORNEO_DELETE_COMMAND, new DeleteCommand());
     }
 
     private Command getCommand(String name) {

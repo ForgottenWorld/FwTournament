@@ -39,6 +39,7 @@ public class SimpleMojangApiService {
         String mojangApiUUID = api.getUUIDOfUsername(playerName);
 
         if(mojangApiUUID != null) {
+            playerUUID = UUID.fromString(UUIDUtils.parseUUID(mojangApiUUID));
             SQLiteConnectionService.getInstance().cacheUUID(Fwtournament.getPlugin(Fwtournament.class), "fwtournament", playerName, playerUUID);
             return UUID.fromString(UUIDUtils.parseUUID(mojangApiUUID));
         }

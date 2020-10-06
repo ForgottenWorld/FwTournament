@@ -5,9 +5,10 @@ import me.kaotich00.fwtournament.bracket.Bracket;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import sun.java2d.pipe.SpanShapeRenderer;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Optional;
+import java.util.UUID;
 
 public class SimpleArenaService {
 
@@ -111,17 +112,6 @@ public class SimpleArenaService {
 
     public HashMap<String,Arena> getArenas() {
         return this.arenas;
-    }
-
-    public Arena getFreeArena() {
-        List<String> arenasSet = new ArrayList<>(this.arenas.keySet());
-        arenasSet.removeAll(this.occupiedArenas.keySet());
-
-        if(!arenasSet.isEmpty()) {
-            return this.arenas.get(arenasSet.get(0));
-        }
-
-        return null;
     }
 
     public Arena getOccupiedArena(Bracket bracket) {
