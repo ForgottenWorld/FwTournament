@@ -5,10 +5,9 @@ import me.kaotich00.fwtournament.bracket.Bracket;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import sun.java2d.pipe.SpanShapeRenderer;
 
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class SimpleArenaService {
 
@@ -17,13 +16,12 @@ public class SimpleArenaService {
     private final int SET_PLAYER_ONE_BATTLE = 3;
     private final int SET_PLAYER_TWO_BATTLE = 4;
 
-    private HashMap<String, Arena> arenas;
     private static SimpleArenaService simpleArenaService;
+    private HashMap<String, Arena> arenas;
+    private HashMap<Bracket, String> occupiedArenas;
     private HashMap<UUID, Integer> playerArenaCreation;
     private HashMap<UUID, String> playerArenaNameCreation;
     private HashMap<UUID, HashMap<Integer, Location>> playerArenaCoordinates;
-
-    private HashMap<Bracket, Arena> occupiedArenas;
 
     private SimpleArenaService() {
         if(simpleArenaService != null) {
@@ -115,12 +113,23 @@ public class SimpleArenaService {
         return this.arenas;
     }
 
-    public HashMap<Bracket, Arena> getOccupiedArenas() {
-        return occupiedArenas;
+    public Arena getFreeArena() {
+        List<String> arenasSet = new ArrayList<>(this.arenas.keySet());
+        arenasSet.removeAll(this.occupiedArenas.keySet());
+
+        if(!arenasSet.isEmpty()) {
+            return this.arenas.get(arenasSet.get(0));
+        }
+
+        return null;
+    }
+
+    public Arena getOccupiedArena(Bracket bracket) {
+        return SimpleArenaService.getInstance().getArena(this.occupiedArenas.get(bracket)).isPresent() ? SimpleArenaService.getInstance().getArena(this.occupiedArenas.get(bracket)).get() : null;
     }
 
     public void addToOccupiedArenas(Bracket bracket, Arena arena) {
-        this.occupiedArenas.put(bracket, arena);
+        this.occupiedArenas.put(bracket, arena.getArenaName());
     }
 
     public void removeFromOccupiedArenas(Bracket bracket) {

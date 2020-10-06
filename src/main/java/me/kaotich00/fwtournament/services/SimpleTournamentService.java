@@ -85,10 +85,7 @@ public class SimpleTournamentService {
             return;
         }
         
-        for(Bracket bracket : tournament.getBracketsList()) {
-            if(bracket.getWinner() != null) {
-                continue;
-            }
+        for(Bracket bracket : tournament.getRemainingBrackets()) {
 
             UUID firstPlayerUUID = bracket.getFirstPlayerUUID();
             UUID secondPlayerUUID = bracket.getSecondPlayerUUID();
@@ -234,17 +231,10 @@ public class SimpleTournamentService {
                     }
                     return true;
                 }).thenAccept(result -> {
-                    HashMap<Bracket,Arena> occupiedArenas = SimpleArenaService.getInstance().getOccupiedArenas();
-                    Arena occupiedArena = occupiedArenas.get(bracket);
-                    String occupiedArenaName = occupiedArena.getArenaName();
-                    SimpleArenaService.getInstance().removeFromOccupiedArenas(bracket);
-
-                    HashMap<String, Arena> arenas = SimpleArenaService.getInstance().getArenas();
-                    for(Map.Entry<String,Arena> entry: arenas.entrySet()) {
-                        Arena arena = entry.getValue();
-                        if(!arena.getArenaName().equals(occupiedArenaName)) {
-                            arena.setOccupied(false);
-                        }
+                    Arena occupiedArena = SimpleArenaService.getInstance().getOccupiedArena(bracket);
+                    if(occupiedArena != null) {
+                        SimpleArenaService.getInstance().removeFromOccupiedArenas(bracket);
+                        occupiedArena.setOccupied(false);
                     }
 
                     // This means every bracket has a winner.
@@ -271,6 +261,7 @@ public class SimpleTournamentService {
             }
             return responseData;
         }).thenAccept(responseData -> {
+
             // If response size is empty
             // the tournament has ended
             // Therefore the winner is announced
@@ -291,6 +282,12 @@ public class SimpleTournamentService {
                 for(int i = 0; i < responseData.size(); i++) {
                     JSONObject match = (JSONObject) responseData.get(i);
                     match = (JSONObject) match.get("match");
+
+                    // Get only the brackets for current round
+                    int round = Integer.valueOf(match.get("round").toString());
+                    if(currentTournament.getCurrentRound() != round) {
+                        continue;
+                    }
 
                     String matchId = match.get("id").toString();
                     String playerOneId = match.get("player1_id").toString();

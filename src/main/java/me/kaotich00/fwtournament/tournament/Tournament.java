@@ -22,6 +22,8 @@ public class Tournament {
     private Kit tournamentKit;
     private ChallongeTournament challongeTournament;
 
+    private int currentRound;
+
     private boolean isGenerated = false;
     private boolean isStarted = false;
 
@@ -31,6 +33,7 @@ public class Tournament {
         this.bracketsList = new HashSet<>();
         this.tournamentKit = new Kit();
         this.activeBrackets = new HashSet<>();
+        this.currentRound = 1;
     }
 
     public void addPlayer(UUID uuid, String playerName) {
@@ -92,8 +95,8 @@ public class Tournament {
         Player playerTwo = Bukkit.getPlayer(bracket.getSecondPlayerUUID());
 
         BattleInitTimer timer = new BattleInitTimer(Fwtournament.getPlugin(Fwtournament.class),
-                60,
-                () -> Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The match between " + bracket.getFirstPlayerName() + " and " + bracket.getSecondPlayerName() + " will began in 60 seconds")),
+                30,
+                () -> Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The match between " + bracket.getFirstPlayerName() + " and " + bracket.getSecondPlayerName() + " will began in 30 seconds")),
                 () -> {
                     assert playerOne != null && playerTwo != null;
 
@@ -120,6 +123,14 @@ public class Tournament {
 
     public Set<Bracket> getActiveBrackets() {
         return this.activeBrackets;
+    }
+
+    public int getCurrentRound() {
+        return currentRound;
+    }
+
+    public void setCurrentRound(int currentRound) {
+        this.currentRound = currentRound;
     }
 
 }
