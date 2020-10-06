@@ -28,33 +28,20 @@ public class KitGUI {
     public void openGUI() {
         Inventory GUI = Bukkit.createInventory(null, GUIUtil.KIT_GUI_INVENTORY_SIZE, GUIUtil.KIT_GUI_INVENTORY_TITLE);
 
-        GUI.setItem(GUIUtil.KIT_GUI_INFO_SLOT, kitInfoMenu());
-        GUI.setItem(GUIUtil.KIT_GUI_TITLE_SLOT, kitTitleMenu());
         GUI.setItem(GUIUtil.KIT_GUI_CLOSE_SLOT, kitConfirmMenu());
 
         if( tournament.getKit().getItemsList() != null ) {
-            int currentSlot = 9;
+            int currentSlot = 0;
             for( ItemStack item : tournament.getKit().getItemsList() ) {
+                if(currentSlot == 44) {
+                    continue;
+                }
                 GUI.setItem(currentSlot, item);
                 currentSlot++;
             }
         }
 
         player.openInventory(GUI);
-    }
-
-    private ItemStack kitTitleMenu(){
-        String[] lores = new String[] {};
-        return prepareMenuPoint(GUIUtil.KIT_GUI_TITLE_MATERIAL, ChatColor.GOLD + "Tournament: " + tournament.getName(), lores );
-    }
-
-    private ItemStack kitInfoMenu(){
-        String[] lores = new String[] {
-                ChatColor.GRAY + "Through this GUI you can modify",
-                ChatColor.GRAY + "the kit associated with this",
-                ChatColor.GRAY + "tournament",
-        };
-        return prepareMenuPoint(GUIUtil.KIT_GUI_INFO_MATERIAL,ChatColor.RED + "Info", lores );
     }
 
     private ItemStack kitConfirmMenu(){

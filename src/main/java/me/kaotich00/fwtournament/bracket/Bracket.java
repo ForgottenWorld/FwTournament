@@ -20,6 +20,8 @@ public class Bracket {
     private UUID winner = null;
     private String winnerChallongeId;
 
+    private String occupiedArenaName;
+
     public Bracket(String challongeMatchId, String tournamentName, String firstPlayerName, String firstPlayerChallongeId, UUID firstPlayerUUID, String secondPlayerName, String secondPlayerChallongeId, UUID secondPlayerUUID) {
         this.challongeMatchId = challongeMatchId;
         this.tournamentName = tournamentName;
@@ -109,6 +111,14 @@ public class Bracket {
 
     public void setWinnerChallongeId(String winnerChallongeId) {
         this.winnerChallongeId = winnerChallongeId;
+    }
+
+    public String getOccupiedArenaName() {
+        return occupiedArenaName;
+    }
+
+    public void setOccupiedArenaName(String occupiedArenaName) {
+        this.occupiedArenaName = occupiedArenaName;
     }
 
     @Override

@@ -59,7 +59,7 @@ public class KitGuiListener implements Listener {
 
         optTournament.ifPresent(tournament -> {
             tournament.getKit().clearKit();
-            for( int i = 9; i < inventory.getSize(); i++ ) {
+            for( int i = 0; i < inventory.getSize() - 1; i++ ) {
                 ItemStack kitItem = inventory.getItem(i);
                 if( kitItem != null ) {
                     tournament.getKit().addItemToKit(kitItem);
