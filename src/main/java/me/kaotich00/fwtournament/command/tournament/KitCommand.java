@@ -15,19 +15,8 @@ public class KitCommand extends AdminCommand {
     public void onCommand(CommandSender sender, String[] args) {
         super.onCommand(sender, args);
 
-        SimpleTournamentService simpleTournamentService = SimpleTournamentService.getInstance();
-        if(simpleTournamentService.getTournament().isPresent()) {
-            Tournament tournament = simpleTournamentService.getTournament().get();
-
-            if(tournament.isGenerated()) {
-                Message.TOURNAMENT_ALREADY_GENERATED.send(sender);
-                return;
-            }
-
-            KitGUI gui = new KitGUI((Player) sender);
-            gui.openGUI();
-
-        }
+        KitGUI gui = new KitGUI((Player) sender);
+        gui.openGUI();
 
     }
 

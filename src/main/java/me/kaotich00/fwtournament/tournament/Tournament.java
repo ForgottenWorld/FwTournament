@@ -8,6 +8,12 @@ import me.kaotich00.fwtournament.challonge.objects.ChallongeTournament;
 import me.kaotich00.fwtournament.kit.Kit;
 import me.kaotich00.fwtournament.tournament.task.BattleInitTimer;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
+import me.kaotich00.fwtournament.utils.ColorUtil;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -97,7 +103,30 @@ public class Tournament {
 
         BattleInitTimer timer = new BattleInitTimer(Fwtournament.getPlugin(Fwtournament.class),
                 30,
-                () -> Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The match between " + bracket.getFirstPlayerName() + " and " + bracket.getSecondPlayerName() + " will began in 30 seconds")),
+                () -> {
+                    String matchMessage = ChatFormatter.pluginPrefix() +
+                            ChatFormatter.formatSuccessMessage("The match between ") +
+                            ChatFormatter.parseColorMessage(bracket.getFirstPlayerName(), ColorUtil.colorSub2) +
+                            ChatFormatter.formatSuccessMessage(" and ") +
+                            ChatFormatter.parseColorMessage(bracket.getSecondPlayerName(), ColorUtil.colorSub2) +
+                            ChatFormatter.formatSuccessMessage(" will began in 30 seconds");
+                    Bukkit.getServer().broadcastMessage(matchMessage);
+
+                    TextComponent message = new TextComponent(ChatFormatter.pluginPrefix() + ChatFormatter.formatSuccessMessage("CLICK HERE TO TELEPORT TO THE ARENA"));
+                    message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/arena join " + arena.getArenaName()   ));
+                    message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to teleport").color(ChatColor.GREEN).italic(true).create()));
+                    for(Player player: Bukkit.getOnlinePlayers()) {
+                        boolean canSend = true;
+                        for(Bracket b: this.activeBrackets.values()) {
+                            if(b.getFirstPlayerUUID().equals(player.getUniqueId()) || b.getSecondPlayerUUID().equals(player.getUniqueId())) {
+                                canSend = false;
+                            }
+                        }
+                        if(canSend) {
+                            player.spigot().sendMessage(message);
+                        }
+                    }
+                },
                 () -> {
                     assert playerOne != null && playerTwo != null;
 

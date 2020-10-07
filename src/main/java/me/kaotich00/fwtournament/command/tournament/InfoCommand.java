@@ -1,7 +1,7 @@
 package me.kaotich00.fwtournament.command.tournament;
 
 import me.kaotich00.fwtournament.bracket.Bracket;
-import me.kaotich00.fwtournament.command.api.AdminCommand;
+import me.kaotich00.fwtournament.command.api.UserCommand;
 import me.kaotich00.fwtournament.message.Message;
 import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.tournament.Tournament;
@@ -11,7 +11,7 @@ import org.bukkit.command.CommandSender;
 
 import java.util.Optional;
 
-public class InfoCommand extends AdminCommand {
+public class InfoCommand extends UserCommand {
 
     @Override
     public void onCommand(CommandSender sender, String[] args) {

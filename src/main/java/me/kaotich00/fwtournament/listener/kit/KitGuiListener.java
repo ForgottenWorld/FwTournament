@@ -31,7 +31,7 @@ public class KitGuiListener implements Listener {
                 if(event.getRawSlot() <= event.getInventory().getSize()) {
                     handleKitGUISelection((Player) event.getWhoClicked(), event.getCurrentItem().getType());
                 }
-                if( event.getRawSlot() >= 0 && event.getRawSlot() <= 8 )
+                if( event.getRawSlot() == 44 )
                     event.setCancelled(true);
                 break;
             default:
@@ -41,11 +41,6 @@ public class KitGuiListener implements Listener {
 
     private void handleKitGUISelection(Player player, Material clickedMenu) {
         switch( clickedMenu ) {
-            /* Close menu */
-            case BARRIER:
-                player.playSound(player.getLocation(), Sound.ENTITY_ITEM_FRAME_REMOVE_ITEM, 10, 1);
-                player.closeInventory();
-                break;
             case EMERALD:
                 addItemRewards(player.getOpenInventory().getTopInventory());
                 player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 10, 1);
@@ -55,17 +50,13 @@ public class KitGuiListener implements Listener {
     }
 
     private void addItemRewards(Inventory inventory) {
-        Optional<Tournament> optTournament = SimpleTournamentService.getInstance().getTournament();
-
-        optTournament.ifPresent(tournament -> {
-            tournament.getKit().clearKit();
-            for( int i = 0; i < inventory.getSize() - 1; i++ ) {
-                ItemStack kitItem = inventory.getItem(i);
-                if( kitItem != null ) {
-                    tournament.getKit().addItemToKit(kitItem);
-                }
+        SimpleTournamentService.getInstance().getTournamentsKit().clearKit();
+        for( int i = 0; i < inventory.getSize() - 1; i++ ) {
+            ItemStack kitItem = inventory.getItem(i);
+            if( kitItem != null ) {
+                SimpleTournamentService.getInstance().getTournamentsKit().addItemToKit(kitItem);
             }
-        });
+        }
     }
 
 }

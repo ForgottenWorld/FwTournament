@@ -42,7 +42,7 @@
                         <configuration>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
-                            <outputDirectory>C:\Users\Simone\Desktop\Minecraft\Server paper\plugins</outputDirectory>
+                            <outputDirectory>Z:\Users\Simone R\Desktop\Spigot\plugins</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>

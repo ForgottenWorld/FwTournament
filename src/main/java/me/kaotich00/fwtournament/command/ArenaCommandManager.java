@@ -3,6 +3,7 @@ package me.kaotich00.fwtournament.command;
 import me.kaotich00.fwtournament.Fwtournament;
 import me.kaotich00.fwtournament.api.command.Command;
 import me.kaotich00.fwtournament.command.arena.DeleteCommand;
+import me.kaotich00.fwtournament.command.arena.JoinCommand;
 import me.kaotich00.fwtournament.command.arena.ListCommand;
 import me.kaotich00.fwtournament.command.arena.NewCommand;
 import me.kaotich00.fwtournament.services.SimpleArenaService;
@@ -33,6 +34,7 @@ public class ArenaCommandManager implements TabExecutor {
         this.commandRegistry.put(CommandTypes.ARENA_NEW_COMMAND, new NewCommand());
         this.commandRegistry.put(CommandTypes.ARENA_DELETE_COMMAND, new DeleteCommand());
         this.commandRegistry.put(CommandTypes.ARENA_LIST_COMMAND, new ListCommand());
+        this.commandRegistry.put(CommandTypes.ARENA_JOIN_COMMAND, new JoinCommand());
     }
 
     private Command getCommand(String name) {

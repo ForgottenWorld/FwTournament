@@ -39,6 +39,7 @@ public class SimpleTournamentService {
         if(simpleTournamentService != null) {
             throw new RuntimeException("Use getInstance() method to get the single instance of this class.");
         }
+        this.tournamentsKit = new Kit();
     }
 
     public static SimpleTournamentService getInstance() {
@@ -54,7 +55,6 @@ public class SimpleTournamentService {
         }
 
         this.currentTournament = new Tournament(name);
-        this.tournamentsKit = new Kit();
 
         return true;
     }
@@ -201,7 +201,7 @@ public class SimpleTournamentService {
             firstPlayer.teleport(finalFreeArena.getPlayerOneSpawn());
             secondPlayer.teleport(finalFreeArena.getPlayerTwoSpawn());
 
-            Kit playersKit = tournament.getKit();
+            Kit playersKit = SimpleTournamentService.getInstance().getTournamentsKit();
 
             firstPlayer.getInventory().clear();
             secondPlayer.getInventory().clear();
