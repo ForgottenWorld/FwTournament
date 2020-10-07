@@ -2,6 +2,7 @@ package me.kaotich00.fwtournament.command.tournament;
 
 import me.kaotich00.fwtournament.challonge.ChallongeIntegrationFactory;
 import me.kaotich00.fwtournament.command.api.AdminCommand;
+import me.kaotich00.fwtournament.message.Message;
 import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.tournament.Tournament;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
@@ -22,12 +23,12 @@ public class StartCommand extends AdminCommand {
             Tournament tournament = simpleTournamentService.getTournament().get();
 
             if(tournament.isStarted()) {
-                sender.sendMessage(ChatFormatter.formatErrorMessage("Tournament already started!"));
+                Message.TOURNAMENT_ALREADY_STARTED.send(sender);
                 return;
             }
 
             if(tournament.getChallongeTournament() != null) {
-                sender.sendMessage(ChatFormatter.formatSuccessMessage("Starting tournament..."));
+                Message.TOURNAMENT_STARTING.send(sender);
                 CompletableFuture.supplyAsync(() -> {
                     try {
                         ChallongeIntegrationFactory.startTournament((Player) sender, tournament);
@@ -36,16 +37,16 @@ public class StartCommand extends AdminCommand {
                     }
                     return true;
                 }).thenAccept(startingResult -> {
-                    sender.sendMessage(ChatFormatter.formatSuccessMessage("Tournament started!"));
+                    Message.TOURNAMENT_STARTED.send(sender);
                     tournament.setStarted(true);
 
                     SimpleTournamentService.getInstance().refreshTournamentBrackets();
                 });
             } else {
-                sender.sendMessage(ChatFormatter.formatErrorMessage("The tournament must be generated before starting it, with the command /torneo generate"));
+                Message.TOURNAMENT_MUST_GENERATE.send(sender);
             }
         } else {
-            sender.sendMessage(ChatFormatter.formatErrorMessage("The tournament you specified doesn't exist"));
+            Message.TOURNAMENT_NOT_FOUND.send(sender);
         }
     }
 

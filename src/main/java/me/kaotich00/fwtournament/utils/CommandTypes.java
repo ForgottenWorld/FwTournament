@@ -15,5 +15,7 @@ public class CommandTypes {
     public static final String TORNEO_DELETE_COMMAND = "delete";
 
     public static final String ARENA_NEW_COMMAND = "new";
+    public static final String ARENA_DELETE_COMMAND = "delete";
+    public static final String ARENA_LIST_COMMAND = "list";
 
 }

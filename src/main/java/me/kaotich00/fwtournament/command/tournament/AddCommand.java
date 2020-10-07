@@ -1,11 +1,13 @@
 package me.kaotich00.fwtournament.command.tournament;
 
 import me.kaotich00.fwtournament.command.api.AdminCommand;
+import me.kaotich00.fwtournament.message.Message;
 import me.kaotich00.fwtournament.services.SimpleMojangApiService;
 import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.tournament.Tournament;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import java.util.Arrays;
 import java.util.List;
@@ -23,7 +25,7 @@ public class AddCommand extends AdminCommand {
             Tournament tournament = simpleTournamentService.getTournament().get();
 
             if(tournament.isGenerated()) {
-                sender.sendMessage(ChatFormatter.formatErrorMessage("The tournament is already generated, can't add players."));
+                Message.TOURNAMENT_ALREADY_GENERATED.send((Player) sender);
                 return;
             }
 
@@ -32,17 +34,17 @@ public class AddCommand extends AdminCommand {
 
             CompletableFuture.runAsync(() -> {
                 for(String playerName : playersList) {
-                    sender.sendMessage(ChatFormatter.formatSuccessMessage("Validanting minecraft username for " + playerName + "..."));
+                    Message.TOURNAMENT_ADD_PLAYER_VALIDATING.send(sender, playerName);
 
                     UUID playerUUID = SimpleMojangApiService.getInstance().getPlayerUUID(playerName);
                     if(playerUUID == null) {
-                        sender.sendMessage(ChatFormatter.formatErrorMessage("The username " + playerName + " does not exists"));
+                        Message.TOURNAMENT_ADD_PLAYER_DOES_NOT_EXIST.send(sender, playerName);
                     }
 
                     if (simpleTournamentService.addPlayerToTournament(playerUUID, playerName)) {
-                        sender.sendMessage(ChatFormatter.formatSuccessMessage("Successfully added " + playerName + " to participants"));
+                        Message.TOURNAMENT_ADD_PLAYER_SUCCESS.send(sender, playerName);
                     } else {
-                        sender.sendMessage(ChatFormatter.formatErrorMessage("The player " + playerName + " is already a participant"));
+                        Message.TOURNAMENT_ADD_PLAYER_ALREADY_PARTICIPANT.send(sender, playerName);
                     }
                 }
             });

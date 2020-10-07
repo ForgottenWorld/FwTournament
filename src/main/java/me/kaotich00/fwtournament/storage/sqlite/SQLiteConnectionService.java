@@ -75,8 +75,7 @@ public class SQLiteConnectionService {
                 ")";
 
         tablesSql[2] = "CREATE TABLE IF NOT EXISTS fw_kit ("+
-                "itemstack varchar(500)," +
-                "CONSTRAINT fk_fw_kit_x_fw_tournament FOREIGN KEY (tournament_name) REFERENCES fw_tournament (name)" +
+                "itemstack varchar(500)" +
                 ")";
 
         tablesSql[3] = "CREATE TABLE IF NOT EXISTS fw_players (" +
@@ -353,7 +352,7 @@ public class SQLiteConnectionService {
 
                 String insertKitsSql = "INSERT INTO fw_kit(itemstack) VALUES(?)";
                 pstmt = conn.prepareStatement(insertKitsSql);
-                for (ItemStack itemStack : tournament.getKit().getItemsList()) {
+                for (ItemStack itemStack : SimpleTournamentService.getInstance().getTournamentsKit().getItemsList()) {
                     pstmt.setString(1, SerializationUtil.toBase64(itemStack));
                     pstmt.executeUpdate();
                 }
@@ -452,18 +451,13 @@ public class SQLiteConnectionService {
     }
 
     public void deleteTournament(Fwtournament plugin, String dbName, Tournament tournament) {
-        String deleteKitSql = "DELETE FROM fw_kit WHERE tournament_name = ?";
         String deletePlayersSql = "DELETE FROM fw_players WHERE tournament_name = ?";
         String deleteBracktsSql = "DELETE FROM fw_brackets WHERE tournament_name = ?";
         String deleteChallongeTournament = "DELETE FROM fw_challonge_tournament WHERE id = (SELECT id_challonge FROM fw_tournament WHERE name = ? LIMIT 1)";
         String deleteTournament = "DELETE FROM fw_tournament WHERE name = ?";
 
         try (Connection conn = this.connect(plugin, dbName)) {
-            PreparedStatement pstmt = conn.prepareStatement(deleteKitSql);
-            pstmt.setString(1, tournament.getName());
-            pstmt.executeUpdate();
-
-            pstmt = conn.prepareStatement(deletePlayersSql);
+            PreparedStatement pstmt = conn.prepareStatement(deletePlayersSql);
             pstmt.setString(1, tournament.getName());
             pstmt.executeUpdate();
 
@@ -477,6 +471,18 @@ public class SQLiteConnectionService {
 
             pstmt = conn.prepareStatement(deleteTournament);
             pstmt.setString(1, tournament.getName());
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public void deleteArena(Fwtournament plugin, String dbName, String arenaName) {
+        String deleteArenaSql = "DELETE FROM fw_arena WHERE name = ?";
+
+        try (Connection conn = this.connect(plugin, dbName)) {
+            PreparedStatement pstmt = conn.prepareStatement(deleteArenaSql);
+            pstmt.setString(1, arenaName);
             pstmt.executeUpdate();
         } catch (SQLException e) {
             System.out.println(e.getMessage());

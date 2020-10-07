@@ -1,14 +1,16 @@
 package me.kaotich00.fwtournament.services;
 
+import me.kaotich00.fwtournament.Fwtournament;
 import me.kaotich00.fwtournament.arena.Arena;
-import me.kaotich00.fwtournament.bracket.Bracket;
-import me.kaotich00.fwtournament.utils.ChatFormatter;
+import me.kaotich00.fwtournament.message.Message;
+import me.kaotich00.fwtournament.storage.sqlite.SQLiteConnectionService;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class SimpleArenaService {
 
@@ -65,23 +67,23 @@ public class SimpleArenaService {
             case SET_PLAYER_ONE_SPAWN:
                 playerArenaCoordinates.put(sender.getUniqueId(), new HashMap<>());
                 playerArenaCoordinates.get(sender.getUniqueId()).put(SET_PLAYER_ONE_SPAWN, location.add(0,1,0));
-                sender.sendMessage(ChatFormatter.formatSuccessMessage("Position selected as First player spawn. Pos X:" + location.getBlockX() + ", Pos Y: " + location.getBlockY()));
-                sender.sendMessage(ChatFormatter.formatSuccessMessage("Select SECOND PLAYER SPAWN by right clicking on the block"));
+                Message.ARENA_CREATION_STEP_COMPLETED.send(sender, "First player spawn", location.getBlockX(), location.getBlockY());
+                Message.ARENA_CREATION_STEP.send(sender, "SECOND PLAYER SPAWN");
                 break;
             case SET_PLAYER_TWO_SPAWN:
                 playerArenaCoordinates.get(sender.getUniqueId()).put(SET_PLAYER_TWO_SPAWN, location.add(0,1,0));
-                sender.sendMessage(ChatFormatter.formatSuccessMessage("Position selected as Second player spawn. Pos X:" + location.getBlockX() + ", Pos Y: " + location.getBlockY()));
-                sender.sendMessage(ChatFormatter.formatSuccessMessage("Select FIRST PLAYER BATTLE LOCATION by right clicking on the block"));
+                Message.ARENA_CREATION_STEP_COMPLETED.send(sender, "Second player spawn", location.getBlockX(), location.getBlockY());
+                Message.ARENA_CREATION_STEP.send(sender, "FIRST PLAYER BATTLE LOCATION");
                 break;
             case SET_PLAYER_ONE_BATTLE:
                 playerArenaCoordinates.get(sender.getUniqueId()).put(SET_PLAYER_ONE_BATTLE, location.add(0,1,0));
-                sender.sendMessage(ChatFormatter.formatSuccessMessage("Position selected as First player battle. Pos X:" + location.getBlockX() + ", Pos Y: " + location.getBlockY()));
-                sender.sendMessage(ChatFormatter.formatSuccessMessage("Select SECOND PLAYER BATTLE LOCATION by right clicking on the block"));
+                Message.ARENA_CREATION_STEP_COMPLETED.send(sender, "First player battle location", location.getBlockX(), location.getBlockY());
+                Message.ARENA_CREATION_STEP.send(sender, "SECOND PLAYER BATTLE SPAWN");
                 break;
             case SET_PLAYER_TWO_BATTLE:
                 playerArenaCoordinates.get(sender.getUniqueId()).put(SET_PLAYER_TWO_BATTLE, location.add(0,1,0));
-                sender.sendMessage(ChatFormatter.formatSuccessMessage("Position selected as Second player battle. Pos X:" + location.getBlockX() + ", Pos Y: " + location.getBlockY()));
-                sender.sendMessage(ChatFormatter.formatSuccessMessage("Arena creation completed!"));
+                Message.ARENA_CREATION_STEP_COMPLETED.send(sender, "Second player battle location", location.getBlockX(), location.getBlockY());
+                Message.ARENA_CREATION_COMPLETED.send(sender);
 
                 Location playerOneSpawn = this.playerArenaCoordinates.get(sender.getUniqueId()).get(SET_PLAYER_ONE_SPAWN);
                 Location playerTwoSpawn = this.playerArenaCoordinates.get(sender.getUniqueId()).get(SET_PLAYER_TWO_SPAWN);
@@ -110,6 +112,16 @@ public class SimpleArenaService {
 
     public HashMap<String,Arena> getArenas() {
         return this.arenas;
+    }
+
+    public void deleteArena(String arenaName) {
+        Arena arenaToDelete = this.arenas.get(arenaName);
+        if(arenaToDelete != null) {
+            this.arenas.remove(arenaName);
+            CompletableFuture.runAsync(() -> {
+                SQLiteConnectionService.getInstance().deleteArena(Fwtournament.getPlugin(Fwtournament.class), "fwtournament", arenaName);
+            });
+        }
     }
 
 }

@@ -5,13 +5,16 @@ import me.kaotich00.fwtournament.arena.Arena;
 import me.kaotich00.fwtournament.bracket.Bracket;
 import me.kaotich00.fwtournament.challonge.ChallongeIntegrationFactory;
 import me.kaotich00.fwtournament.kit.Kit;
+import me.kaotich00.fwtournament.message.Message;
 import me.kaotich00.fwtournament.storage.sqlite.SQLiteConnectionService;
 import me.kaotich00.fwtournament.tournament.Tournament;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
+import me.kaotich00.fwtournament.utils.ColorUtil;
 import me.kaotich00.fwtournament.utils.UUIDUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.World;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
@@ -51,6 +54,7 @@ public class SimpleTournamentService {
         }
 
         this.currentTournament = new Tournament(name);
+        this.tournamentsKit = new Kit();
 
         return true;
     }
@@ -120,7 +124,7 @@ public class SimpleTournamentService {
 
         // If it is not, put player in spectator mode
         if(!tournament.getPlayersList().containsKey(player.getUniqueId())) {
-            player.sendMessage(ChatFormatter.formatSuccessMessage("Hi, you are not part of the tournament. Setting gamemode to spectator."));
+            Message.NOT_PART_OF_TOURNAMENT.send(player);
             player.setGameMode(GameMode.SPECTATOR);
             return;
         }
@@ -135,7 +139,7 @@ public class SimpleTournamentService {
 
         // If it is not, put player in spectator mode
         if(playerBracket == null) {
-            player.sendMessage(ChatFormatter.formatSuccessMessage("Hi, you are currently part of a tournament, but no match is open at the moment. Gamemode set to spectator mode."));
+            Message.NO_MATCH_OPEN.send(player);
             player.setGameMode(GameMode.SPECTATOR);
             return;
         }
@@ -152,7 +156,7 @@ public class SimpleTournamentService {
 
         // Check if the opponent is online
         if(Bukkit.getPlayer(playerBracket.getFirstPlayerUUID()) == null || Bukkit.getPlayer(playerBracket.getSecondPlayerUUID()) == null) {
-            player.sendMessage(ChatFormatter.formatSuccessMessage("Hi, your match will begin as soon as your opponent comes online. Be patient. Gamemode set to spectator mode."));
+            Message.WAITING_FOR_OPPONENT.send(player);
             player.setGameMode(GameMode.SPECTATOR);
             return;
         }
@@ -168,7 +172,7 @@ public class SimpleTournamentService {
         }
 
         if(freeArena == null) {
-            player.sendMessage(ChatFormatter.formatSuccessMessage("Hi, you and your opponent are ready to play. Unfortunately there is not a free arena at the moment. Be patient. Gamemode set to spectator mode."));
+            Message.NO_FREE_ARENAS.send(player);
             return;
         }
 
@@ -179,7 +183,12 @@ public class SimpleTournamentService {
         // Add bracket as active
         tournament.startBracket(playerBracket);
 
-        Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The match between " + playerBracket.getFirstPlayerName() + " and " + playerBracket.getSecondPlayerName() + " has been detected. Teleporting players in 10 seconds."));
+        Bukkit.getServer().broadcastMessage(ChatFormatter.pluginPrefix() +
+                ChatFormatter.formatSuccessMessage("The match between ") +
+                ChatFormatter.parseColorMessage(playerBracket.getFirstPlayerName(), ColorUtil.colorSub2) +
+                ChatFormatter.formatSuccessMessage(" and ") +
+                ChatFormatter.parseColorMessage(playerBracket.getSecondPlayerName(), ColorUtil.colorSub2) +
+                ChatFormatter.formatSuccessMessage(" has been detected. Teleporting players in 10 seconds."));
 
         Bracket finalPlayerBracket = playerBracket;
         Arena finalFreeArena = freeArena;
@@ -197,8 +206,14 @@ public class SimpleTournamentService {
             firstPlayer.getInventory().clear();
             secondPlayer.getInventory().clear();
 
-            firstPlayer.setHealth(20.0);
-            secondPlayer.setHealth(20.0);
+            firstPlayer.setHealth(firstPlayer.getAttribute(Attribute.GENERIC_MAX_HEALTH).getDefaultValue());
+            secondPlayer.setHealth(secondPlayer.getAttribute(Attribute.GENERIC_MAX_HEALTH).getDefaultValue());
+
+            firstPlayer.setFoodLevel(20);
+            secondPlayer.setFoodLevel(20);
+
+            firstPlayer.setFireTicks(0);
+            secondPlayer.setFireTicks(0);
 
             for(PotionEffect effect: firstPlayer.getActivePotionEffects()){
                 firstPlayer.removePotionEffect(effect.getType());
@@ -233,8 +248,6 @@ public class SimpleTournamentService {
 
         Set<Bracket> activeBrackets = currentTournament.getActiveBrackets();
 
-        Bukkit.getConsoleSender().sendMessage("Active brackets size: " + activeBrackets.size());
-
         if(activeBrackets.isEmpty()) {
             return;
         }
@@ -253,7 +266,8 @@ public class SimpleTournamentService {
             }
 
             if(bracket.getWinner() != null) {
-                Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The winner of the match is " + Objects.requireNonNull(Bukkit.getServer().getPlayer(bracket.getWinner())).getName()));
+                Bukkit.getServer().broadcastMessage(ChatFormatter.pluginPrefix() + ChatFormatter.formatSuccessMessage("The winner of the match is ") +
+                        ChatFormatter.parseColorMessage(Objects.requireNonNull(Bukkit.getServer().getPlayer(bracket.getWinner())).getName(), ColorUtil.colorSub2));
 
                 Player firstPlayer = Bukkit.getPlayer(bracket.getFirstPlayerUUID());
                 if(firstPlayer != null) {
@@ -278,10 +292,8 @@ public class SimpleTournamentService {
                     return true;
                 }).thenAccept(result -> {
                     String occupiedArenaName = bracket.getOccupiedArenaName();
-                    Bukkit.getConsoleSender().sendMessage("Occupied arena name: " + occupiedArenaName);
                     Optional<Arena> optOccupiedArena = SimpleArenaService.getInstance().getArena(occupiedArenaName);
                     if(optOccupiedArena.isPresent()) {
-                        Bukkit.getConsoleSender().sendMessage("Occupied arena is found");
                         Arena occupiedArena = optOccupiedArena.get();
                         occupiedArena.setOccupied(false);
                     }
@@ -290,7 +302,7 @@ public class SimpleTournamentService {
                     // Therefore new brackets need to be
                     // generated
                     if (remainingBrackets.isEmpty()) {
-                        Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("Round " + this.currentTournament.getCurrentRound() + " is over!"));
+                        Bukkit.getServer().broadcastMessage(ChatFormatter.pluginPrefix() + ChatFormatter.formatSuccessMessage("Round " + this.currentTournament.getCurrentRound() + " is over!"));
                         refreshTournamentBrackets();
                     } else {
                         checkForNewMatchmakings();
@@ -324,13 +336,13 @@ public class SimpleTournamentService {
                     return true;
                 }).thenAccept(result -> {
                     endTournament(currentTournament);
-                    Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The tournament has ended!"));
+                    Bukkit.getServer().broadcastMessage(ChatFormatter.pluginPrefix() + ChatFormatter.formatSuccessMessage("The tournament has ended!"));
                     //Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("Congratulation to the winner of the tournament: " + Objects.requireNonNull(Bukkit.getServer().getPlayer(bracket.getWinner())).getName()));
                 });
             } else {
                 this.currentTournament.setCurrentRound(this.currentTournament.getCurrentRound() + 1);
                 CompletableFuture.supplyAsync(() -> {
-                    Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("Calculating new matches..."));
+                    Bukkit.getServer().broadcastMessage(ChatFormatter.pluginPrefix() + ChatFormatter.formatSuccessMessage("Calculating new matches..."));
                     for(int i = 0; i < responseData.size(); i++) {
                         JSONObject match = (JSONObject) responseData.get(i);
                         match = (JSONObject) match.get("match");
@@ -375,10 +387,6 @@ public class SimpleTournamentService {
 
     public Kit getTournamentsKit() {
         return tournamentsKit;
-    }
-
-    public void setTournamentsKit(Kit tournamentsKit) {
-        this.tournamentsKit = tournamentsKit;
     }
 
 }

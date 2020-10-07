@@ -163,4 +163,16 @@ public class ChallongeIntegrationFactory {
         HTTPClient.fetchHttpRequest(URI, requestMethod, postDataParams, sender);
     }
 
+    public static void randomizeBrackets(Player sender, Tournament tournament) throws ParseException {
+        ChallongeTournament challongeTournament = tournament.getChallongeTournament();
+
+        Multimap<String,String> postDataParams = ArrayListMultimap.create();
+        postDataParams.put("api_key", HTTPUtils.API_KEY);
+
+        String URI = HTTPUtils.CHALLONGE_RANDOMIZE_BRACKET.replace("{tournament}",challongeTournament.getId().toString());
+        String requestMethod = "POST";
+
+        HTTPClient.fetchHttpRequest(URI, requestMethod, postDataParams, sender);
+    }
+
 }

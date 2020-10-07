@@ -1,8 +1,8 @@
 package me.kaotich00.fwtournament.command.tournament;
 
 import me.kaotich00.fwtournament.command.api.AdminCommand;
+import me.kaotich00.fwtournament.message.Message;
 import me.kaotich00.fwtournament.services.SimpleTournamentService;
-import me.kaotich00.fwtournament.utils.ChatFormatter;
 import org.bukkit.command.CommandSender;
 
 public class NewCommand extends AdminCommand {
@@ -17,13 +17,9 @@ public class NewCommand extends AdminCommand {
         Boolean result = simpleTournamentService.newTournament(tournamentName);
 
         if(result) {
-            sender.sendMessage(ChatFormatter.formatSuccessMessage("Successfully created tournament"));
-            sender.sendMessage(ChatFormatter.formatSuccessMessage("You can now add, remove players or mofify tournament kit with"));
-            sender.sendMessage(ChatFormatter.formatSuccessMessage("/torneo add <participant_list>"));
-            sender.sendMessage(ChatFormatter.formatSuccessMessage("/torneo remove <participant_list>"));
-            sender.sendMessage(ChatFormatter.formatSuccessMessage("/torneo kit"));
+            Message.TOURNAMENT_NEW_SUCCESS.send(sender);
         } else {
-            sender.sendMessage("A tournament is already created. Skipping.");
+            Message.TOURNAMENT_NEW_ERROR.send(sender);
         }
     }
 

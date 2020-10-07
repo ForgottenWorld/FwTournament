@@ -4,6 +4,7 @@ import me.kaotich00.fwtournament.Fwtournament;
 import me.kaotich00.fwtournament.challonge.ChallongeIntegrationFactory;
 import me.kaotich00.fwtournament.challonge.objects.ChallongeTournament;
 import me.kaotich00.fwtournament.command.api.AdminCommand;
+import me.kaotich00.fwtournament.message.Message;
 import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.tournament.Tournament;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
@@ -24,7 +25,7 @@ public class GenerateCommand extends AdminCommand {
             Tournament tournament = simpleTournamentService.getTournament().get();
 
             if(tournament.isGenerated()) {
-                sender.sendMessage(ChatFormatter.formatErrorMessage("The tournament is already generated!"));
+                Message.TOURNAMENT_ALREADY_GENERATED.send(sender);
                 return;
             }
 
@@ -34,7 +35,7 @@ public class GenerateCommand extends AdminCommand {
             String challongeOpenSignup = "false";
             String challongeTournamentLink = Fwtournament.getDefaultConfig().getString("challonge_tournament_prefix") + "_" + tournament.getName();
 
-            sender.sendMessage(ChatFormatter.formatSuccessMessage("Generating Challonge tournament..."));
+            Message.TOURNAMENT_GENERATING.send(sender);
             CompletableFuture.supplyAsync(() -> {
                 ChallongeTournament challongeTournament = null;
                 try {
@@ -45,14 +46,14 @@ public class GenerateCommand extends AdminCommand {
                 return challongeTournament;
             }).thenAccept(challongeTournament -> {
                 if (challongeTournament == null) {
-                    sender.sendMessage(ChatFormatter.formatErrorMessage("Error while generating tournament. Maybe it is already existent."));
+                    Message.TOURNAMENT_GENERATING_ERROR.send(sender);
                     return;
                 }
 
-                sender.sendMessage(ChatFormatter.formatSuccessMessage("Successfully generated tournament at link: " + challongeTournament.getChallongeLink()));
+                Message.TOURNAMENT_GENERATING_SUCCESS.send(sender, challongeTournament.getChallongeLink());
                 tournament.setChallongeTournament(challongeTournament);
 
-                sender.sendMessage(ChatFormatter.formatSuccessMessage("Adding participants to Challonge tournament..."));
+                Message.TOURNAMENT_ADDING_PARTICIPANTS.send(sender);
                 CompletableFuture.supplyAsync(() -> {
                     try {
                         ChallongeIntegrationFactory.addParticipantsToTournament((Player) sender, tournament);
@@ -61,8 +62,20 @@ public class GenerateCommand extends AdminCommand {
                     }
                     return true;
                 }).thenAccept(result -> {
-                    sender.sendMessage(ChatFormatter.formatSuccessMessage("Successfully added participants to the tournament"));
+                    Message.TOURNAMENT_ADDING_PARTICIPANTS_SUCCESS.send(sender);
                     tournament.setGenerated(true);
+
+                    Message.TOURNAMENT_RANDOMIZING.send(sender);
+                    CompletableFuture.supplyAsync(() -> {
+                        try {
+                            ChallongeIntegrationFactory.randomizeBrackets((Player) sender, tournament);
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                        return true;
+                    }).thenAccept(randomizeResult -> {
+                        Message.TOURNAMENT_RANDOMIZE_SUCCESS.send(sender);
+                    });
                 });
             });
         }

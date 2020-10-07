@@ -9,16 +9,16 @@ import java.util.Locale;
 public class ChatFormatter {
 
     public static String pluginPrefix() {
-        return  ChatColor.AQUA + "[" +
-                ChatColor.DARK_AQUA + "FwTournament" +
-                ChatColor.AQUA + "] " +
+        return  parseColorMessage("[", ColorUtil.colorSecondary) +
+                parseColorMessage("FwTournament", ColorUtil.colorSub1) +
+                parseColorMessage("] ", ColorUtil.colorSecondary) +
                 ChatColor.RESET;
     }
 
     public static String chatHeader() {
-        return  parseColorMessage("oOo----------------[ ", ColorUtil.colorPrimary) +
-                parseColorMessage("FwTournament ", ColorUtil.colorSecondary) +
-                parseColorMessage(" ]----------------oOo ", ColorUtil.colorPrimary);
+        return  parseColorMessage("oOo----------------[ ", ColorUtil.colorSecondary) +
+                parseColorMessage("FwTournament ", ColorUtil.colorSub1) +
+                parseColorMessage(" ]----------------oOo ", ColorUtil.colorSecondary);
     }
 
     public static String chatFooter() {
@@ -26,12 +26,12 @@ public class ChatFormatter {
     }
 
     public static String formatSuccessMessage(String message) {
-        message = ChatColor.DARK_GREEN + "" + ChatColor.BOLD + ">> " + ChatColor.GREEN + message;
+        message = parseColorMessage(message, ColorUtil.successColor);
         return message;
     }
 
     public static String formatErrorMessage(String message) {
-        message = ChatColor.DARK_RED + "" + ChatColor.BOLD + ">> " + ChatColor.RED + message;
+        message = parseColorMessage(message, ColorUtil.errorColor);
         return message;
     }
 
@@ -53,6 +53,14 @@ public class ChatFormatter {
 
     public static String parseColorMessage(String message, String hexColor) {
         return ChatColor.of(hexColor) + message;
+    }
+
+    public static String rewritePlaceholders(String input) {
+        int i = 0;
+        while (input.contains("{}")) {
+            input = input.replaceFirst("\\{\\}", "{" + i++ + "}");
+        }
+        return input;
     }
 
 }

@@ -4,13 +4,11 @@ import me.kaotich00.fwtournament.arena.Arena;
 import me.kaotich00.fwtournament.command.api.AdminCommand;
 import me.kaotich00.fwtournament.message.Message;
 import me.kaotich00.fwtournament.services.SimpleArenaService;
-import me.kaotich00.fwtournament.utils.ChatFormatter;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 import java.util.Optional;
 
-public class NewCommand extends AdminCommand {
+public class DeleteCommand extends AdminCommand {
 
     @Override
     public void onCommand(CommandSender sender, String[] args) {
@@ -21,13 +19,13 @@ public class NewCommand extends AdminCommand {
         SimpleArenaService simpleArenaService = SimpleArenaService.getInstance();
         Optional<Arena> arena = simpleArenaService.getArena(arenaName);
 
-        if(arena.isPresent()) {
-            Message.ARENA_ALREADY_EXISTS.send(sender);
+        if(!arena.isPresent()) {
+            Message.ARENA_NOT_FOUND.send(sender);
         } else {
-            Message.ARENA_CREATION_STARTED.send(sender);
-            Message.ARENA_CREATION_STEP.send(sender, "FIRST PLAYER SPAWN");
-            SimpleArenaService.getInstance().addPlayerToArenaCreation((Player) sender, arenaName);
+            SimpleArenaService.getInstance().deleteArena(arenaName);
+            Message.ARENA_DELETED.send(sender);
         }
+
     }
 
     @Override
@@ -37,7 +35,7 @@ public class NewCommand extends AdminCommand {
 
     @Override
     public String getUsage() {
-        return "/arena new <name>";
+        return "/arena delete <name>";
     }
 
     @Override

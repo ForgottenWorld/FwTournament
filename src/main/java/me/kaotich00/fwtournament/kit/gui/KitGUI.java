@@ -1,6 +1,6 @@
 package me.kaotich00.fwtournament.kit.gui;
 
-import me.kaotich00.fwtournament.tournament.Tournament;
+import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.utils.GUIUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -17,12 +17,10 @@ import java.util.List;
 
 public class KitGUI {
 
-    private Tournament tournament;
     private Player player;
 
-    public KitGUI(Player player, Tournament tournament) {
+    public KitGUI(Player player) {
         this.player = player;
-        this.tournament = tournament;
     }
 
     public void openGUI() {
@@ -30,9 +28,10 @@ public class KitGUI {
 
         GUI.setItem(GUIUtil.KIT_GUI_CLOSE_SLOT, kitConfirmMenu());
 
-        if( tournament.getKit().getItemsList() != null ) {
+        SimpleTournamentService simpleTournamentService = SimpleTournamentService.getInstance();
+        if( simpleTournamentService.getTournamentsKit().getItemsList() != null ) {
             int currentSlot = 0;
-            for( ItemStack item : tournament.getKit().getItemsList() ) {
+            for( ItemStack item : simpleTournamentService.getTournamentsKit().getItemsList() ) {
                 if(currentSlot == 44) {
                     continue;
                 }

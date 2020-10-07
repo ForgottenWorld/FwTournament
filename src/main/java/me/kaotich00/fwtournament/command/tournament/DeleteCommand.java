@@ -1,9 +1,9 @@
 package me.kaotich00.fwtournament.command.tournament;
 
 import me.kaotich00.fwtournament.command.api.AdminCommand;
+import me.kaotich00.fwtournament.message.Message;
 import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.tournament.Tournament;
-import me.kaotich00.fwtournament.utils.ChatFormatter;
 import org.bukkit.command.CommandSender;
 
 public class DeleteCommand extends AdminCommand {
@@ -17,9 +17,9 @@ public class DeleteCommand extends AdminCommand {
             Tournament tournament = simpleTournamentService.getTournament().get();
 
             SimpleTournamentService.getInstance().endTournament(tournament);
-            sender.sendMessage(ChatFormatter.formatSuccessMessage("Tournament deleted"));
+            Message.TOURNAMENT_DELETE_SUCCESS.send(sender);
         } else {
-            sender.sendMessage(ChatFormatter.formatErrorMessage("No tournament is available at the moment, can't delete."));
+            Message.TOURNAMENT_DELETE_ERROR.send(sender);
         }
 
     }

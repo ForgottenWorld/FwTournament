@@ -2,6 +2,7 @@ package me.kaotich00.fwtournament.command.tournament;
 
 import me.kaotich00.fwtournament.command.api.AdminCommand;
 import me.kaotich00.fwtournament.kit.gui.KitGUI;
+import me.kaotich00.fwtournament.message.Message;
 import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.tournament.Tournament;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
@@ -19,7 +20,7 @@ public class KitCommand extends AdminCommand {
             Tournament tournament = simpleTournamentService.getTournament().get();
 
             if(tournament.isGenerated()) {
-                sender.sendMessage(ChatFormatter.formatErrorMessage("The tournament is already generated! Can't modify kits"));
+                Message.TOURNAMENT_ALREADY_GENERATED.send(sender);
                 return;
             }
 

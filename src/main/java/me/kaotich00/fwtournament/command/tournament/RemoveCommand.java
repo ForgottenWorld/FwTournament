@@ -1,6 +1,7 @@
 package me.kaotich00.fwtournament.command.tournament;
 
 import me.kaotich00.fwtournament.command.api.AdminCommand;
+import me.kaotich00.fwtournament.message.Message;
 import me.kaotich00.fwtournament.services.SimpleMojangApiService;
 import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.tournament.Tournament;
@@ -23,7 +24,7 @@ public class RemoveCommand extends AdminCommand {
             Tournament tournament = simpleTournamentService.getTournament().get();
 
             if(tournament.isGenerated()) {
-                sender.sendMessage(ChatFormatter.formatErrorMessage("The tournament is already generated, can't remove players."));
+                Message.TOURNAMENT_ALREADY_GENERATED.send(sender);
                 return;
             }
 
@@ -35,9 +36,9 @@ public class RemoveCommand extends AdminCommand {
                     UUID playerUUID = SimpleMojangApiService.getInstance().getPlayerUUID(playerName);
 
                     if (simpleTournamentService.removePlayerFromTournament(playerUUID)) {
-                        sender.sendMessage(ChatFormatter.formatSuccessMessage("Successfully removed " + playerName + " from participants"));
+                        Message.TOURNAMENT_REMOVE_PLAYER_SUCCESS.send(sender, playerName);
                     } else {
-                        sender.sendMessage(ChatFormatter.formatErrorMessage("The player " + playerName + " is not a participant"));
+                        Message.TOURNAMENT_REMOVE_PLAYER_NOT_PARTICIPANT.send(sender, playerName);
                     }
                 }
             });

@@ -2,6 +2,7 @@ package me.kaotich00.fwtournament.command.tournament;
 
 import me.kaotich00.fwtournament.bracket.Bracket;
 import me.kaotich00.fwtournament.command.api.AdminCommand;
+import me.kaotich00.fwtournament.message.Message;
 import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.tournament.Tournament;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
@@ -23,8 +24,8 @@ public class InfoCommand extends AdminCommand {
             Tournament tournament = optTournament.get();
             sender.sendMessage(ChatFormatter.chatHeader());
 
-            sender.sendMessage(ChatFormatter.parseColorMessage("Tournament name: ", ColorUtil.colorPrimary) +
-                                ChatFormatter.parseColorMessage(tournament.getName(), ColorUtil.colorSecondary));
+            sender.sendMessage(ChatFormatter.parseColorMessage("Tournament name: ", ColorUtil.colorSub2) +
+                                ChatFormatter.parseColorMessage(tournament.getName(), ColorUtil.successColor));
 
             String status = "created";
             if(tournament.isGenerated()) {
@@ -35,23 +36,36 @@ public class InfoCommand extends AdminCommand {
             }
 
             if(tournament.isGenerated()) {
-                sender.sendMessage(ChatFormatter.parseColorMessage("Challonge link: ", ColorUtil.colorPrimary) +
-                        ChatFormatter.parseColorMessage(tournament.getChallongeTournament().getChallongeLink(), ColorUtil.colorSecondary));
+                sender.sendMessage(ChatFormatter.parseColorMessage("Challonge link: ", ColorUtil.colorSub2) +
+                        ChatFormatter.parseColorMessage(tournament.getChallongeTournament().getChallongeLink(), ColorUtil.successColor));
             }
 
-            sender.sendMessage(ChatFormatter.parseColorMessage("Status: ", ColorUtil.colorPrimary) +
-                    ChatFormatter.parseColorMessage(status, ColorUtil.colorSecondary));
+            sender.sendMessage(ChatFormatter.parseColorMessage("Status: ", ColorUtil.colorSub2) +
+                    ChatFormatter.parseColorMessage(status, ColorUtil.successColor));
 
-            sender.sendMessage(ChatFormatter.parseColorMessage("Matches list:", ColorUtil.colorPrimary));
+            sender.sendMessage(ChatFormatter.parseColorMessage("Matches list:", ColorUtil.colorSub2));
             for(Bracket bracket: tournament.getBracketsList()) {
-                sender.sendMessage( ChatFormatter.parseColorMessage(bracket.getFirstPlayerName(), ColorUtil.colorSub1) +
-                                    ChatFormatter.parseColorMessage(" vs ", ColorUtil.colorSecondary) +
-                                    ChatFormatter.parseColorMessage(bracket.getSecondPlayerName(), ColorUtil.colorSub1));
+                String firstPlayer = ChatFormatter.parseColorMessage(bracket.getFirstPlayerName(), ColorUtil.colorSub1);
+                String vs = ChatFormatter.parseColorMessage(" vs ", ColorUtil.colorSecondary);
+                String secondPlayer = ChatFormatter.parseColorMessage(bracket.getSecondPlayerName(), ColorUtil.colorSub1);
+                String result = ChatFormatter.parseColorMessage("(0-0)", ColorUtil.colorSecondary);
+                if(bracket.getWinner() != null) {
+                    if(bracket.getWinner().equals(bracket.getFirstPlayerUUID())) {
+                        firstPlayer = ChatFormatter.parseColorMessage(bracket.getFirstPlayerName(), ColorUtil.successColor);
+                        secondPlayer = ChatFormatter.parseColorMessage(bracket.getSecondPlayerName(), ColorUtil.colorPrimary);
+                        result = ChatFormatter.parseColorMessage("(1-0)", ColorUtil.colorSecondary);
+                    } else if(bracket.getWinner().equals(bracket.getSecondPlayerUUID())){
+                        firstPlayer = ChatFormatter.parseColorMessage(bracket.getFirstPlayerName(), ColorUtil.colorPrimary);
+                        secondPlayer = ChatFormatter.parseColorMessage(bracket.getSecondPlayerName(), ColorUtil.successColor);
+                        result = ChatFormatter.parseColorMessage("(0-1)", ColorUtil.colorSecondary);
+                    }
+                }
+                sender.sendMessage( firstPlayer + " " + vs + " " + secondPlayer + " " + result);
             }
 
 
         } else {
-            sender.sendMessage(ChatFormatter.formatErrorMessage("Error: no tournament with the given name exists"));
+            Message.TOURNAMENT_NOT_FOUND.send(sender);
         }
     }
 
