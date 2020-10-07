@@ -11,8 +11,12 @@ import me.kaotich00.fwtournament.utils.ChatFormatter;
 import me.kaotich00.fwtournament.utils.UUIDUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.World;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
@@ -88,6 +92,10 @@ public class SimpleTournamentService {
         
         for(Bracket bracket : tournament.getRemainingBrackets()) {
 
+            if(tournament.getActiveBrackets().contains(bracket)) {
+                continue;
+            }
+
             UUID firstPlayerUUID = bracket.getFirstPlayerUUID();
             UUID secondPlayerUUID = bracket.getSecondPlayerUUID();
 
@@ -132,6 +140,11 @@ public class SimpleTournamentService {
             return;
         }
 
+        // If the bracket has a winner, skip
+        if(playerBracket.getWinner() != null) {
+            return;
+        }
+
         // if player is in a running match, skip
         if(tournament.getActiveBrackets().contains(playerBracket)) {
             return;
@@ -161,7 +174,10 @@ public class SimpleTournamentService {
 
         // Set the arena as occupied
         freeArena.setOccupied(true);
-        SimpleArenaService.getInstance().addToOccupiedArenas(playerBracket, freeArena);
+        playerBracket.setOccupiedArenaName(freeArena.getArenaName());
+
+        // Add bracket as active
+        tournament.startBracket(playerBracket);
 
         Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The match between " + playerBracket.getFirstPlayerName() + " and " + playerBracket.getSecondPlayerName() + " has been detected. Teleporting players in 10 seconds."));
 
@@ -181,16 +197,31 @@ public class SimpleTournamentService {
             firstPlayer.getInventory().clear();
             secondPlayer.getInventory().clear();
 
+            firstPlayer.setHealth(20.0);
+            secondPlayer.setHealth(20.0);
+
+            for(PotionEffect effect: firstPlayer.getActivePotionEffects()){
+                firstPlayer.removePotionEffect(effect.getType());
+            }
+            for(PotionEffect effect: secondPlayer.getActivePotionEffects()){
+                secondPlayer.removePotionEffect(effect.getType());
+            }
+
             firstPlayer.setGameMode(GameMode.SURVIVAL);
             secondPlayer.setGameMode(GameMode.SURVIVAL);
+
+            World world = firstPlayer.getWorld();
+            List<Entity> entList = world.getEntities();
+            for(Entity current : entList) {
+                if (current instanceof Item) {
+                    current.remove();
+                }
+            }
 
             for(ItemStack itemStack: playersKit.getItemsList()) {
                 firstPlayer.getInventory().addItem(itemStack);
                 secondPlayer.getInventory().addItem(itemStack);
             }
-
-            // Add bracket as active
-            tournament.startBracket(finalPlayerBracket);
 
             // Run battle timer
             tournament.startBattleTimer(finalFreeArena, finalPlayerBracket);
@@ -202,6 +233,8 @@ public class SimpleTournamentService {
 
         Set<Bracket> activeBrackets = currentTournament.getActiveBrackets();
 
+        Bukkit.getConsoleSender().sendMessage("Active brackets size: " + activeBrackets.size());
+
         if(activeBrackets.isEmpty()) {
             return;
         }
@@ -211,11 +244,12 @@ public class SimpleTournamentService {
                 bracket.setWinner(bracket.getSecondPlayerUUID());
                 bracket.setWinnerChallongeId(bracket.getSecondPlayerChallongeId());
                 this.currentTournament.removePlayer(bracket.getFirstPlayerUUID());
-            }
-            if(bracket.getSecondPlayerUUID().equals(player.getUniqueId())) {
+            } else if(bracket.getSecondPlayerUUID().equals(player.getUniqueId())) {
                 bracket.setWinner(bracket.getFirstPlayerUUID());
                 bracket.setWinnerChallongeId(bracket.getFirstPlayerChallongeId());
                 this.currentTournament.removePlayer(bracket.getSecondPlayerUUID());
+            } else {
+                continue;
             }
 
             if(bracket.getWinner() != null) {
@@ -243,9 +277,12 @@ public class SimpleTournamentService {
                     }
                     return true;
                 }).thenAccept(result -> {
-                    Arena occupiedArena = SimpleArenaService.getInstance().getOccupiedArena(bracket);
-                    if(occupiedArena != null) {
-                        SimpleArenaService.getInstance().removeFromOccupiedArenas(bracket);
+                    String occupiedArenaName = bracket.getOccupiedArenaName();
+                    Bukkit.getConsoleSender().sendMessage("Occupied arena name: " + occupiedArenaName);
+                    Optional<Arena> optOccupiedArena = SimpleArenaService.getInstance().getArena(occupiedArenaName);
+                    if(optOccupiedArena.isPresent()) {
+                        Bukkit.getConsoleSender().sendMessage("Occupied arena is found");
+                        Arena occupiedArena = optOccupiedArena.get();
                         occupiedArena.setOccupied(false);
                     }
 

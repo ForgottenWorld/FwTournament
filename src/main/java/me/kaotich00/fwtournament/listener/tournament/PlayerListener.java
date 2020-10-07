@@ -5,6 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.util.concurrent.ExecutionException;
@@ -18,7 +19,7 @@ public class PlayerListener implements Listener {
     }
 
     @EventHandler
-    public void onPlayerDeathListener(PlayerDeathEvent event) throws ExecutionException, InterruptedException {
+    public void onPlayerDeathListener(PlayerDeathEvent event) {
         Player player = event.getEntity();
 
         if(!(event.getEntity().getKiller() instanceof Player)) {

@@ -1,5 +1,6 @@
 package me.kaotich00.fwtournament.tournament;
 
+import com.destroystokyo.paper.Title;
 import me.kaotich00.fwtournament.Fwtournament;
 import me.kaotich00.fwtournament.arena.Arena;
 import me.kaotich00.fwtournament.bracket.Bracket;
@@ -17,8 +18,8 @@ public class Tournament {
 
     private String name;
     private Map<UUID, String> playersList;
-    private Set<Bracket> bracketsList;
-    private Set<Bracket> activeBrackets;
+    private HashMap<String, Bracket> bracketsList;
+    private HashMap<String, Bracket> activeBrackets;
     private Kit tournamentKit;
     private ChallongeTournament challongeTournament;
 
@@ -30,9 +31,9 @@ public class Tournament {
     public Tournament(String name) {
         this.name = name;
         this.playersList = new HashMap<>();
-        this.bracketsList = new HashSet<>();
+        this.bracketsList = new HashMap<>();
         this.tournamentKit = new Kit();
-        this.activeBrackets = new HashSet<>();
+        this.activeBrackets = new HashMap<>();
         this.currentRound = 0;
     }
 
@@ -43,7 +44,7 @@ public class Tournament {
     public void removePlayer(UUID playerUUID) { playersList.remove(playerUUID); }
 
     public void pushBracket(Bracket bracket) {
-        bracketsList.add(bracket);
+        bracketsList.put(bracket.getChallongeMatchId(), bracket);
     }
 
     public String getName() {
@@ -55,10 +56,10 @@ public class Tournament {
     }
 
     public Set<Bracket> getBracketsList() {
-        return bracketsList;
+        return new HashSet<>(bracketsList.values());
     }
 
-    public Set<Bracket> getRemainingBrackets() { return bracketsList.stream().filter(bracket -> bracket.getWinner() == null).collect(Collectors.toSet()); }
+    public Set<Bracket> getRemainingBrackets() { return bracketsList.values().stream().filter(bracket -> bracket.getWinner() == null).collect(Collectors.toSet()); }
 
     public Kit getKit() {
         return this.tournamentKit;
@@ -100,29 +101,29 @@ public class Tournament {
                 () -> {
                     assert playerOne != null && playerTwo != null;
 
-                    playerOne.sendMessage(ChatFormatter.formatSuccessMessage("Go!"));
-                    playerTwo.sendMessage(ChatFormatter.formatSuccessMessage("Go!"));
+                    playerOne.sendTitle(new Title(ChatFormatter.formatSuccessMessage("Go!"), "", 1, 18, 1));
+                    playerTwo.sendTitle(new Title(ChatFormatter.formatSuccessMessage("Go!"), "", 1, 18, 1));
 
                     playerOne.teleport(arena.getPlayerOneBattle());
                     playerTwo.teleport(arena.getPlayerTwoBattle());
                 },
                 (t) -> {
                     if( t.getSecondsLeft() <= 5) {
-                        playerOne.sendMessage(ChatFormatter.formatSuccessMessage(String.valueOf(t.getSecondsLeft())));
-                        playerTwo.sendMessage(ChatFormatter.formatSuccessMessage(String.valueOf(t.getSecondsLeft())));
+                        playerOne.sendTitle(new Title(ChatFormatter.formatSuccessMessage(String.valueOf(t.getSecondsLeft())), "", 1, 18, 1));
+                        playerTwo.sendTitle(new Title(ChatFormatter.formatSuccessMessage(String.valueOf(t.getSecondsLeft())), "", 1, 18, 1));
                     }
                 });
         timer.scheduleTimer();
     }
 
     public void startBracket(Bracket bracket) {
-        this.activeBrackets.add(bracket);
+        this.activeBrackets.put(bracket.getChallongeMatchId(), bracket);
     }
 
-    public void stopBracket(Bracket bracket) { this.activeBrackets.remove(bracket); }
+    public void stopBracket(Bracket bracket) { this.activeBrackets.remove(bracket.getChallongeMatchId()); }
 
     public Set<Bracket> getActiveBrackets() {
-        return this.activeBrackets;
+        return new HashSet<>(this.activeBrackets.values());
     }
 
     public int getCurrentRound() {

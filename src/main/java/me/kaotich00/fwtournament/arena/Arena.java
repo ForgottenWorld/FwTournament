@@ -14,7 +14,7 @@ public class Arena {
     private Location playerOneBattle;
     private Location playerTwoBattle;
 
-    private boolean isOccupied = false;
+    private boolean isOccupied;
 
     public Arena(String arenaName, Location playerOneSpawn, Location playerTwoSpawn, Location playerOneBattle, Location playerTwoBattle) {
         this.arenaName = arenaName;
@@ -22,6 +22,7 @@ public class Arena {
         this.playerTwoSpawn = playerTwoSpawn;
         this.playerOneBattle = playerOneBattle;
         this.playerTwoBattle = playerTwoBattle;
+        this.isOccupied = false;
     }
 
     public Location getPlayerOneSpawn() {

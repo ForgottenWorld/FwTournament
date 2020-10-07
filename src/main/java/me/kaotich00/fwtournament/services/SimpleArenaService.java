@@ -19,7 +19,6 @@ public class SimpleArenaService {
 
     private static SimpleArenaService simpleArenaService;
     private HashMap<String, Arena> arenas;
-    private HashMap<Bracket, String> occupiedArenas;
     private HashMap<UUID, Integer> playerArenaCreation;
     private HashMap<UUID, String> playerArenaNameCreation;
     private HashMap<UUID, HashMap<Integer, Location>> playerArenaCoordinates;
@@ -32,7 +31,6 @@ public class SimpleArenaService {
         this.playerArenaCreation = new HashMap<>();
         this.playerArenaCoordinates = new HashMap<>();
         this.playerArenaNameCreation = new HashMap<>();
-        this.occupiedArenas = new HashMap<>();
     }
 
     public static SimpleArenaService getInstance() {
@@ -112,18 +110,6 @@ public class SimpleArenaService {
 
     public HashMap<String,Arena> getArenas() {
         return this.arenas;
-    }
-
-    public Arena getOccupiedArena(Bracket bracket) {
-        return SimpleArenaService.getInstance().getArena(this.occupiedArenas.get(bracket)).isPresent() ? SimpleArenaService.getInstance().getArena(this.occupiedArenas.get(bracket)).get() : null;
-    }
-
-    public void addToOccupiedArenas(Bracket bracket, Arena arena) {
-        this.occupiedArenas.put(bracket, arena.getArenaName());
-    }
-
-    public void removeFromOccupiedArenas(Bracket bracket) {
-        this.occupiedArenas.remove(bracket);
     }
 
 }
