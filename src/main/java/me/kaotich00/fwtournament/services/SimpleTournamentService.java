@@ -26,6 +26,8 @@ public class SimpleTournamentService {
     private static SimpleTournamentService simpleTournamentService;
     private Tournament currentTournament;
 
+    private Kit tournamentsKit;
+
     private SimpleTournamentService() {
         if(simpleTournamentService != null) {
             throw new RuntimeException("Use getInstance() method to get the single instance of this class.");
@@ -198,10 +200,6 @@ public class SimpleTournamentService {
 
     public void checkTournamentDeath(Player player) {
 
-        for(Bracket bracker: currentTournament.getBracketsList()) {
-            currentTournament.startBracket(bracker);
-        }
-
         Set<Bracket> activeBrackets = currentTournament.getActiveBrackets();
 
         if(activeBrackets.isEmpty()) {
@@ -221,7 +219,7 @@ public class SimpleTournamentService {
             }
 
             if(bracket.getWinner() != null) {
-                //Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The winner of the match is " + Objects.requireNonNull(Bukkit.getServer().getPlayer(bracket.getWinner())).getName()));
+                Bukkit.getServer().broadcastMessage(ChatFormatter.formatSuccessMessage("The winner of the match is " + Objects.requireNonNull(Bukkit.getServer().getPlayer(bracket.getWinner())).getName()));
 
                 Player firstPlayer = Bukkit.getPlayer(bracket.getFirstPlayerUUID());
                 if(firstPlayer != null) {
@@ -336,6 +334,14 @@ public class SimpleTournamentService {
         currentTournament = null;
 
         SQLiteConnectionService.getInstance().deleteTournament(Fwtournament.getPlugin(Fwtournament.class), "fwtournament", tournament);
+    }
+
+    public Kit getTournamentsKit() {
+        return tournamentsKit;
+    }
+
+    public void setTournamentsKit(Kit tournamentsKit) {
+        this.tournamentsKit = tournamentsKit;
     }
 
 }

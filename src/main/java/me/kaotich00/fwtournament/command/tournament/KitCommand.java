@@ -23,7 +23,7 @@ public class KitCommand extends AdminCommand {
                 return;
             }
 
-            KitGUI gui = new KitGUI((Player) sender, tournament);
+            KitGUI gui = new KitGUI((Player) sender);
             gui.openGUI();
 
         }

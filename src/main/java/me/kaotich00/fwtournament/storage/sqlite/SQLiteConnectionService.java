@@ -76,7 +76,6 @@ public class SQLiteConnectionService {
 
         tablesSql[2] = "CREATE TABLE IF NOT EXISTS fw_kit ("+
                 "itemstack varchar(500)," +
-                "tournament_name  varchar(50)," +
                 "CONSTRAINT fk_fw_kit_x_fw_tournament FOREIGN KEY (tournament_name) REFERENCES fw_tournament (name)" +
                 ")";
 
@@ -208,17 +207,11 @@ public class SQLiteConnectionService {
 
             // loop through the result set
             while (rs.next()) {
-                String tournamentName = rs.getString("tournament_name");
                 String itemStackText = rs.getString("itemstack");
 
                 SimpleTournamentService simpleTournamentService = SimpleTournamentService.getInstance();
-                simpleTournamentService.newTournament(tournamentName);
-                Optional<Tournament> opTournament = simpleTournamentService.getTournament();
-                if(opTournament.isPresent()) {
-                    Tournament tournament = opTournament.get();
-                    ItemStack itemStack = SerializationUtil.fromBase64(itemStackText);
-                    tournament.getKit().addItemToKit(itemStack);
-                }
+                ItemStack itemStack = SerializationUtil.fromBase64(itemStackText);
+                simpleTournamentService.getTournamentsKit().addItemToKit(itemStack);
             }
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -358,11 +351,10 @@ public class SQLiteConnectionService {
                 pstmt = conn.prepareStatement(deleteKitSql);
                 pstmt.executeUpdate();
 
-                String insertKitsSql = "INSERT INTO fw_kit(itemstack,tournament_name) VALUES(?,?)";
+                String insertKitsSql = "INSERT INTO fw_kit(itemstack) VALUES(?)";
                 pstmt = conn.prepareStatement(insertKitsSql);
                 for (ItemStack itemStack : tournament.getKit().getItemsList()) {
                     pstmt.setString(1, SerializationUtil.toBase64(itemStack));
-                    pstmt.setString(2, tournament.getName());
                     pstmt.executeUpdate();
                 }
 
