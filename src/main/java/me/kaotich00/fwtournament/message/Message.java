@@ -48,6 +48,7 @@ public enum Message {
     NO_MATCH_OPEN(parseColorMessage("You are currently part of a tournament, but no match is open at the moment. Gamemode set to spectator mode.", ColorUtil.colorSub2), true),
     WAITING_FOR_OPPONENT(parseColorMessage("Your match will begin as soon as your opponent comes online. Be patient. Gamemode set to spectator mode.", ColorUtil.colorSub2), true),
     NO_FREE_ARENAS(parseColorMessage("You and your opponent are ready to play. Unfortunately there is not a free arena at the moment. The match will began as soon as one arena become free. Gamemode set to spectator mode.", ColorUtil.colorSub2), true),
+    PLAYER_DISCONNECTED_DURING_LOADING(ChatFormatter.formatErrorMessage("Your opponent disconnected during loading time. Exiting preparation"), true),
 
     /* Arena  */
     ARENA_ALREADY_EXISTS(ChatFormatter.formatErrorMessage("An arena with that name already exists"), true),

@@ -6,6 +6,9 @@ import me.kaotich00.fwtournament.arena.Arena;
 import me.kaotich00.fwtournament.bracket.Bracket;
 import me.kaotich00.fwtournament.challonge.objects.ChallongeTournament;
 import me.kaotich00.fwtournament.kit.Kit;
+import me.kaotich00.fwtournament.message.Message;
+import me.kaotich00.fwtournament.services.SimpleArenaService;
+import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.tournament.task.BattleInitTimer;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
 import me.kaotich00.fwtournament.utils.ColorUtil;
@@ -15,6 +18,11 @@ import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
+import org.bukkit.NamespacedKey;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 
 import java.util.*;
@@ -101,6 +109,17 @@ public class Tournament {
         Player playerOne = Bukkit.getPlayer(bracket.getFirstPlayerUUID());
         Player playerTwo = Bukkit.getPlayer(bracket.getSecondPlayerUUID());
 
+        String bossBarName = "fwtournament." + bracket.getChallongeMatchId();
+        BossBar bossBar = Bukkit.getServer().createBossBar(
+                NamespacedKey.minecraft(bossBarName),
+                ChatFormatter.parseColorMessage("The match will began in 30 seconds", ColorUtil.colorSecondary),
+                BarColor.RED,
+                BarStyle.SEGMENTED_10
+        );
+        bossBar.setProgress(1.0);
+        bossBar.addPlayer(playerOne);
+        bossBar.addPlayer(playerTwo);
+
         BattleInitTimer timer = new BattleInitTimer(Fwtournament.getPlugin(Fwtournament.class),
                 30,
                 () -> {
@@ -128,7 +147,36 @@ public class Tournament {
                     }
                 },
                 () -> {
-                    assert playerOne != null && playerTwo != null;
+                    bossBar.removePlayer(playerOne);
+                    bossBar.removePlayer(playerTwo);
+                    Bukkit.getServer().removeBossBar(NamespacedKey.minecraft(bossBarName));
+
+                    Player assertPlayerOne = Bukkit.getPlayer(playerOne.getUniqueId());
+                    Player assertPlayerTwo = Bukkit.getPlayer(playerTwo.getUniqueId());
+
+                    if( assertPlayerOne == null || assertPlayerTwo == null ) {
+                        String occupiedArenaName = bracket.getOccupiedArenaName();
+                        Optional<Arena> optOccupiedArena = SimpleArenaService.getInstance().getArena(occupiedArenaName);
+                        if(optOccupiedArena.isPresent()) {
+                            Arena occupiedArena = optOccupiedArena.get();
+                            occupiedArena.setOccupied(false);
+                        }
+
+                        Tournament tournament = SimpleTournamentService.getInstance().getTournament().get();
+                        tournament.stopBracket(bracket);
+                    }
+
+                    if(assertPlayerOne == null) {
+                        playerTwo.setGameMode(GameMode.SPECTATOR);
+                        Message.PLAYER_DISCONNECTED_DURING_LOADING.send(playerTwo);
+                        return;
+                    }
+
+                    if(assertPlayerTwo == null) {
+                        playerOne.setGameMode(GameMode.SPECTATOR);
+                        Message.PLAYER_DISCONNECTED_DURING_LOADING.send(playerOne);
+                        return;
+                    }
 
                     playerOne.sendTitle(new Title(ChatFormatter.formatSuccessMessage("Go!"), "", 1, 18, 1));
                     playerTwo.sendTitle(new Title(ChatFormatter.formatSuccessMessage("Go!"), "", 1, 18, 1));
@@ -141,6 +189,10 @@ public class Tournament {
                         playerOne.sendTitle(new Title(ChatFormatter.formatSuccessMessage(String.valueOf(t.getSecondsLeft())), "", 1, 18, 1));
                         playerTwo.sendTitle(new Title(ChatFormatter.formatSuccessMessage(String.valueOf(t.getSecondsLeft())), "", 1, 18, 1));
                     }
+
+                    bossBar.setTitle(ChatFormatter.parseColorMessage("The match will began in " + t.getSecondsLeft() + " seconds", ColorUtil.colorSecondary));
+                    double progress = bossBar.getProgress() - 0.03 < 0.0 ? 0.0 : bossBar.getProgress() - 0.03;
+                    bossBar.setProgress(progress);
                 });
         timer.scheduleTimer();
     }

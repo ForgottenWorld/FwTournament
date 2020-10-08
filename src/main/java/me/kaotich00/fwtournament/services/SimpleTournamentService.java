@@ -197,7 +197,29 @@ public class SimpleTournamentService {
             Player firstPlayer = Bukkit.getPlayer(finalPlayerBracket.getFirstPlayerUUID());
             Player secondPlayer = Bukkit.getPlayer(finalPlayerBracket.getSecondPlayerUUID());
 
-            assert firstPlayer != null && secondPlayer != null;
+            if( firstPlayer == null || secondPlayer == null ) {
+                String occupiedArenaName = finalPlayerBracket.getOccupiedArenaName();
+                Optional<Arena> optOccupiedArena = SimpleArenaService.getInstance().getArena(occupiedArenaName);
+                if(optOccupiedArena.isPresent()) {
+                    Arena occupiedArena = optOccupiedArena.get();
+                    occupiedArena.setOccupied(false);
+                }
+
+                tournament.stopBracket(finalPlayerBracket);
+            }
+
+            if(firstPlayer == null) {
+                secondPlayer.setGameMode(GameMode.SPECTATOR);
+                Message.PLAYER_DISCONNECTED_DURING_LOADING.send(secondPlayer);
+                return;
+            }
+
+            if(secondPlayer == null) {
+                firstPlayer.setGameMode(GameMode.SPECTATOR);
+                Message.PLAYER_DISCONNECTED_DURING_LOADING.send(firstPlayer);
+                return;
+            }
+
             firstPlayer.teleport(finalFreeArena.getPlayerOneSpawn());
             secondPlayer.teleport(finalFreeArena.getPlayerTwoSpawn());
 
