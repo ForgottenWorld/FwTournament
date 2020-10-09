@@ -50,6 +50,10 @@ public enum Message {
     NO_FREE_ARENAS(parseColorMessage("You and your opponent are ready to play. Unfortunately there is not a free arena at the moment. The match will began as soon as one arena become free. Gamemode set to spectator mode.", ColorUtil.colorSub2), true),
     PLAYER_DISCONNECTED_DURING_LOADING(ChatFormatter.formatErrorMessage("Your opponent disconnected during loading time. Exiting preparation"), true),
 
+    PLAYER_NOT_FOUND(ChatFormatter.formatErrorMessage("No player found for the given name"), true),
+    BRACKET_OR_PLAYER_NOT_FOUND(ChatFormatter.formatErrorMessage("The player doesn't exists or is not in a bracket!"), true),
+    FIXED_PLAYER_NAME(ChatFormatter.formatSuccessMessage("Fixed payer name for user {}, new name: {}"), true),
+
     /* Arena  */
     ARENA_ALREADY_EXISTS(ChatFormatter.formatErrorMessage("An arena with that name already exists"), true),
     ARENA_CREATION_STARTED(parseColorMessage("Arena creation started", ColorUtil.colorSub2), true),

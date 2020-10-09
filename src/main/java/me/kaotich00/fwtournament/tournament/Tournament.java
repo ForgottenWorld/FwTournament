@@ -8,6 +8,7 @@ import me.kaotich00.fwtournament.challonge.objects.ChallongeTournament;
 import me.kaotich00.fwtournament.kit.Kit;
 import me.kaotich00.fwtournament.message.Message;
 import me.kaotich00.fwtournament.services.SimpleArenaService;
+import me.kaotich00.fwtournament.services.SimpleMojangApiService;
 import me.kaotich00.fwtournament.services.SimpleTournamentService;
 import me.kaotich00.fwtournament.tournament.task.BattleInitTimer;
 import me.kaotich00.fwtournament.utils.ChatFormatter;
@@ -213,6 +214,18 @@ public class Tournament {
 
     public void setCurrentRound(int currentRound) {
         this.currentRound = currentRound;
+    }
+
+    public void fixPlayerName(Bracket bracket, String playerChallongeId, String newName, UUID newUUID) {
+        if(bracket.getFirstPlayerChallongeId().equals(playerChallongeId)) {
+            bracket.setFirstPlayerName(newName);
+            bracket.setFirstPlayerUUID(newUUID);
+        }
+        if(bracket.getSecondPlayerChallongeId().equals(playerChallongeId)) {
+            bracket.setSecondPlayerName(newName);
+            bracket.setSecondPlayerUUID(newUUID);
+        }
+        this.bracketsList.put(bracket.getChallongeMatchId(), bracket);
     }
 
 }

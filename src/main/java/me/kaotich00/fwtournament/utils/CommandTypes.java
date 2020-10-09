@@ -13,6 +13,8 @@ public class CommandTypes {
     public static final String TORNEO_ADD_COMMAND = "add";
     public static final String TORNEO_REMOVE_COMMAND = "remove";
     public static final String TORNEO_DELETE_COMMAND = "delete";
+    public static final String TORNEO_SKIP_COMMAND = "skip";
+    public static final String TORNEO_FIX_COMMAND = "fix";
 
     public static final String ARENA_NEW_COMMAND = "new";
     public static final String ARENA_DELETE_COMMAND = "delete";

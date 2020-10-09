@@ -175,4 +175,17 @@ public class ChallongeIntegrationFactory {
         HTTPClient.fetchHttpRequest(URI, requestMethod, postDataParams, sender);
     }
 
+    public static void fixPlayerName(Player sender, Tournament tournament, String participantId, String newName) throws ParseException {
+        ChallongeTournament challongeTournament = tournament.getChallongeTournament();
+
+        Multimap<String,String> postDataParams = ArrayListMultimap.create();
+        postDataParams.put("api_key", HTTPUtils.API_KEY);
+        postDataParams.put("participant[name]", newName);
+
+        String URI = HTTPUtils.CHALLONGE_FIX_USER_NAME.replace("{tournament}",challongeTournament.getId().toString()).replace("{participant_id}", participantId);
+        String requestMethod = "PUT";
+
+        HTTPClient.fetchHttpRequest(URI, requestMethod, postDataParams, sender);
+    }
+
 }

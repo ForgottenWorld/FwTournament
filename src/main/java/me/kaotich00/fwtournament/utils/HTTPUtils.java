@@ -14,5 +14,6 @@ public class HTTPUtils {
     public static final String CHALLONGE_POST_MATCH_RESULT = "https://api.challonge.com/v1/tournaments/{tournament}/matches/{match_id}.json";
     public static final String CHALLONGE_END_TOURNAMENT = "https://api.challonge.com/v1/tournaments/{tournament}/finalize.json";
     public static final String CHALLONGE_RANDOMIZE_BRACKET = "https://api.challonge.com/v1/tournaments/{tournament}/participants/randomize.json";
+    public static final String CHALLONGE_FIX_USER_NAME = "https://api.challonge.com/v1/tournaments/{tournament}/participants/{participant_id}.json";
 
 }

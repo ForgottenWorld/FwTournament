@@ -381,10 +381,9 @@ public class SimpleTournamentService {
                         try {
                             String playerOneName = ChallongeIntegrationFactory.getParticipantName(null, currentTournament, playerOneId);
                             String playerTwoName = ChallongeIntegrationFactory.getParticipantName(null, currentTournament, playerTwoId);
-                            Mojang api = new Mojang().connect();
 
-                            UUID playerOneUUID = UUID.fromString(UUIDUtils.parseUUID(api.getUUIDOfUsername(playerOneName)));
-                            UUID playerTwoUUID = UUID.fromString(UUIDUtils.parseUUID(api.getUUIDOfUsername(playerTwoName)));
+                            UUID playerOneUUID = SimpleMojangApiService.getInstance().getPlayerUUID(playerOneName);
+                            UUID playerTwoUUID = SimpleMojangApiService.getInstance().getPlayerUUID(playerTwoName);
 
                             SimpleTournamentService.getInstance().pushNewBracket(matchId, currentTournament, playerOneName, playerOneUUID, playerTwoName, playerTwoUUID, playerOneId, playerTwoId);
 

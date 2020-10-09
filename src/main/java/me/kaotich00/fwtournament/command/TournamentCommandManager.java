@@ -35,6 +35,8 @@ public class TournamentCommandManager implements TabExecutor {
         this.commandRegistry.put(CommandTypes.TORNEO_KIT_COMMAND, new KitCommand());
         this.commandRegistry.put(CommandTypes.TORNEO_REMOVE_COMMAND, new RemoveCommand());
         this.commandRegistry.put(CommandTypes.TORNEO_DELETE_COMMAND, new DeleteCommand());
+        this.commandRegistry.put(CommandTypes.TORNEO_SKIP_COMMAND, new SkipCommand());
+        this.commandRegistry.put(CommandTypes.TORNEO_FIX_COMMAND, new FixCommand());
     }
 
     private Command getCommand(String name) {
