@@ -26,6 +26,7 @@ import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 
+import java.awt.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -124,17 +125,30 @@ public class Tournament {
         BattleInitTimer timer = new BattleInitTimer(Fwtournament.getPlugin(Fwtournament.class),
                 30,
                 () -> {
+
                     String matchMessage = ChatFormatter.pluginPrefix() +
                             ChatFormatter.formatSuccessMessage("The match between ") +
                             ChatFormatter.parseColorMessage(bracket.getFirstPlayerName(), ColorUtil.colorSub2) +
                             ChatFormatter.formatSuccessMessage(" and ") +
                             ChatFormatter.parseColorMessage(bracket.getSecondPlayerName(), ColorUtil.colorSub2) +
-                            ChatFormatter.formatSuccessMessage(" will began in 30 seconds");
+                            ChatFormatter.formatSuccessMessage(" will began in ") +
+                            ChatFormatter.parseColorMessage("30 ", ColorUtil.colorSub2) +
+                            ChatFormatter.formatSuccessMessage("seconds");
+                    Bukkit.getServer().broadcastMessage(ChatFormatter.chatFillerTop());
                     Bukkit.getServer().broadcastMessage(matchMessage);
 
-                    TextComponent message = new TextComponent(ChatFormatter.pluginPrefix() + ChatFormatter.formatSuccessMessage("CLICK HERE TO TELEPORT TO THE ARENA"));
-                    message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/arena join " + arena.getArenaName()   ));
-                    message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to teleport").color(ChatColor.GREEN).italic(true).create()));
+                    TextComponent clickMessage = new TextComponent("[ CLICK HERE TO TELEPORT TO THE ARENA ]");
+                    clickMessage.setColor(ChatColor.GREEN);
+                    clickMessage.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/arena join " + arena.getArenaName()   ));
+                    clickMessage.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to teleport").color(ChatColor.GREEN).italic(true).create()));
+
+                    ComponentBuilder message = new ComponentBuilder();
+                    message
+                            .append("[").color(ChatColor.of(ColorUtil.colorSecondary))
+                            .append("FwTournament").color(ChatColor.of(ColorUtil.colorSub1))
+                            .append("] ").color(ChatColor.of(ColorUtil.colorSecondary))
+                            .append(clickMessage);
+
                     for(Player player: Bukkit.getOnlinePlayers()) {
                         boolean canSend = true;
                         for(Bracket b: this.activeBrackets.values()) {
@@ -143,9 +157,11 @@ public class Tournament {
                             }
                         }
                         if(canSend) {
-                            player.spigot().sendMessage(message);
+                            player.spigot().sendMessage(message.create());
                         }
                     }
+
+                    Bukkit.getServer().broadcastMessage(ChatFormatter.chatFillerBottom());
                 },
                 () -> {
                     bossBar.removePlayer(playerOne);

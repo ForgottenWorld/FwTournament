@@ -7,6 +7,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 
+import java.awt.*;
+
 public class PlayerListener implements Listener {
 
     @EventHandler

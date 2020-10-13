@@ -21,6 +21,14 @@ public class ChatFormatter {
                 parseColorMessage(" ]----------------oOo ", ColorUtil.colorSecondary);
     }
 
+    public static String chatFillerTop() {
+        return parseColorMessage("oOo-----------------------------------------------oOo", ColorUtil.colorSecondary);
+    }
+
+    public static String chatFillerBottom() {
+        return parseColorMessage("-----------------------------------------------------", ColorUtil.colorSecondary);
+    }
+
     public static String chatFooter() {
         return  ChatColor.AQUA + String.join("", Collections.nCopies(53, "-"));
     }
