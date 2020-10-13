@@ -35,10 +35,8 @@ public final class Fwtournament extends JavaPlugin {
     @Override
     public void onDisable() {
         Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN + "[FwTournament]" + ChatColor.RESET + " Saving data to SQLite");
-        CompletableFuture.runAsync(() -> {
-            SQLiteConnectionService sqLiteConnectionService = SQLiteConnectionService.getInstance();
-            sqLiteConnectionService.saveTournamentToDatabase(this, "fwtournament");
-        });
+        SQLiteConnectionService sqLiteConnectionService = SQLiteConnectionService.getInstance();
+        sqLiteConnectionService.saveTournamentToDatabase(this, "fwtournament");
     }
 
     private void loadConfiguration() {

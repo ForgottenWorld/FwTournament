@@ -193,6 +193,7 @@ public class SQLiteConnectionService {
 
                 tournament.setChallongeTournament(challongeTournament);
             }
+
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
@@ -212,6 +213,7 @@ public class SQLiteConnectionService {
                 ItemStack itemStack = SerializationUtil.fromBase64(itemStackText);
                 simpleTournamentService.getTournamentsKit().addItemToKit(itemStack);
             }
+
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         } catch (IOException e) {
@@ -444,6 +446,8 @@ public class SQLiteConnectionService {
                     pstmt.executeUpdate();
                 }
 
+                pstmt.close();
+
             } catch (SQLException e) {
                 System.out.println(e.getMessage());
             }
@@ -472,6 +476,9 @@ public class SQLiteConnectionService {
             pstmt = conn.prepareStatement(deleteTournament);
             pstmt.setString(1, tournament.getName());
             pstmt.executeUpdate();
+
+            pstmt.close();
+
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
@@ -484,6 +491,8 @@ public class SQLiteConnectionService {
             PreparedStatement pstmt = conn.prepareStatement(deleteArenaSql);
             pstmt.setString(1, arenaName);
             pstmt.executeUpdate();
+
+            pstmt.close();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }

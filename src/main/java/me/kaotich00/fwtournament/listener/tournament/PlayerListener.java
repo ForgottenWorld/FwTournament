@@ -19,9 +19,9 @@ public class PlayerListener implements Listener {
     public void onPlayerDeathListener(PlayerDeathEvent event) {
         Player player = event.getEntity();
 
-        if(!(event.getEntity().getKiller() instanceof Player)) {
+        /*if(!(event.getEntity().getKiller() instanceof Player)) {
             return;
-        }
+        }*/
 
         SimpleTournamentService.getInstance().checkTournamentDeath(player);
     }
