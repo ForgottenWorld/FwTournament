@@ -53,6 +53,7 @@ public enum Message {
     PLAYER_NOT_FOUND(ChatFormatter.formatErrorMessage("No player found for the given name"), true),
     BRACKET_OR_PLAYER_NOT_FOUND(ChatFormatter.formatErrorMessage("The player doesn't exists or is not in a bracket!"), true),
     FIXED_PLAYER_NAME(ChatFormatter.formatSuccessMessage("Fixed payer name for user {}, new name: {}"), true),
+    CANT_TALK(ChatFormatter.formatErrorMessage("I'm sorry, you cannot talk while a tournament is being disputed."), true),
 
     /* Arena  */
     ARENA_ALREADY_EXISTS(ChatFormatter.formatErrorMessage("An arena with that name already exists"), true),
