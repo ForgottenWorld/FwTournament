@@ -67,7 +67,10 @@ public class FixCommand extends AdminCommand {
                     }).thenAccept(result -> {
                         Message.FIXED_PLAYER_NAME.send(sender, oldName, newName);
                         tournament.fixPlayerName(finalIncriminatedBracket, finalPlayerChallongeId, newName, uuid);
+                        SimpleTournamentService.getInstance().checkForNewMatchmakings();
                     });
+                } else {
+                    Message.FIXED_PLAYER_NAME.send(sender, oldName, newName);
                 }
             });
 

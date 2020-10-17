@@ -57,7 +57,7 @@ public class SkipCommand extends AdminCommand {
                 selectedBracket.setWinnerChallongeId(selectedPlayerChallongeId);
 
                 Bukkit.getServer().broadcastMessage(ChatFormatter.pluginPrefix() + ChatFormatter.formatSuccessMessage("The player ") +
-                        ChatFormatter.parseColorMessage(Objects.requireNonNull(Bukkit.getServer().getPlayer(selectedBracket.getWinner())).getName(), ColorUtil.colorSub2) +
+                        ChatFormatter.parseColorMessage(playerName, ColorUtil.colorSub2) +
                         ChatFormatter.formatSuccessMessage(" won by forfeit!"));
 
                 Player firstPlayer = Bukkit.getPlayer(selectedBracket.getFirstPlayerUUID());
